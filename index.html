@@ -159,6 +159,22 @@ header{
 .tab#tab-todos.active .tab-badge{background:var(--dhl-dark);color:#fff}
 .tab#tab-cargados.active{border-bottom-color:var(--status-load)}
 .tab#tab-cargados.active .tab-badge{background:var(--status-load);color:#fff}
+.tab#tab-historico.active{border-bottom-color:#7B5EA7}
+.tab#tab-historico.active .tab-badge{background:#7B5EA7;color:#fff}
+
+/* ══ HISTORICO BANNER ══ */
+.hist-banner{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,#F3EEF9 0%,#EDE7F6 100%);
+  border:1px solid #D1C4E9;border-radius:var(--r);
+  padding:10px 14px;margin-bottom:14px;
+  font-family:var(--font-mono);font-size:11px;color:#5E35B1;font-weight:700;
+  letter-spacing:.3px;
+}
+.hist-banner-icon{font-size:18px;flex-shrink:0}
+.hist-banner-txt{flex:1}
+.hist-banner-date{font-size:13px;font-weight:700;color:#4527A0;margin-bottom:1px}
+.hist-banner-sub{font-size:10px;color:#7E57C2;font-weight:400;letter-spacing:.2px}
 
 /* ══ STATS ══ */
 .stats-row{
@@ -662,6 +678,9 @@ tr:hover td{background:#FFFDE7}
   <button class="tab" id="tab-cargados" onclick="setTab('cargados')">
     🚛 Cargados <span class="tab-badge" id="b-carg">0</span>
   </button>
+  <button class="tab" id="tab-historico" onclick="setTab('historico')">
+    🕐 Histórico <span class="tab-badge" id="b-hist">0</span>
+  </button>
 </div>
 
 <!-- STATS -->
@@ -715,6 +734,7 @@ tr:hover td{background:#FFFDE7}
   <div class="nav-item" onclick="setTab('terminado')"><span>✅</span>Terminado</div>
   <div class="nav-item" id="nav-todos" onclick="setTab('todos')"><span>📋</span>Todos</div>
   <div class="nav-item" id="nav-carg" onclick="setTab('cargados')"><span>🚛</span>Cargados</div>
+  <div class="nav-item" id="nav-hist" onclick="setTab('historico')"><span>🕐</span>Histórico</div>
 </div>
 
 <!-- TOAST -->
@@ -918,6 +938,7 @@ function setTab(t) {
   document.getElementById('nav-pend').classList.toggle('active', t==='pendientes');
   document.getElementById('nav-todos').classList.toggle('active', t==='todos');
   document.getElementById('nav-carg').classList.toggle('active', t==='cargados');
+  document.getElementById('nav-hist').classList.toggle('active', t==='historico');
   render();
 }
 
@@ -963,10 +984,11 @@ function updateLists() {
 }
 
 function updateStats() {
+  const hoy = new Date().toISOString().slice(0, 10);
   const pend=pedidos.filter(p=>p.status==='pendiente').length;
   const term=pedidos.filter(p=>p.status==='terminado').length;
-  const rev =pedidos.filter(p=>p.status==='revision').length;
-  const carg=pedidos.filter(p=>p.status==='cargado').length;
+  const carg=pedidos.filter(p=>p.status==='cargado' && (!p.fecha || p.fecha >= hoy)).length;
+  const hist=pedidos.filter(p=>p.status==='cargado' && p.fecha && p.fecha < hoy).length;
   document.getElementById('s-total').textContent=pedidos.length;
   document.getElementById('s-pend').textContent=pend;
   document.getElementById('s-term').textContent=term;
@@ -975,6 +997,7 @@ function updateStats() {
   document.getElementById('b-term').textContent=term;
   document.getElementById('b-todos').textContent=pedidos.length;
   document.getElementById('b-carg').textContent=carg;
+  document.getElementById('b-hist').textContent=hist;
 }
 
 function render() {
@@ -985,17 +1008,97 @@ function render() {
   const pf = document.getElementById('fProducto').value;
   const fd = document.getElementById('fFechaDesde').value;
   const fh = document.getElementById('fFechaHasta').value;
+
+  const hoy = new Date().toISOString().slice(0, 10);
+
+  // Histórico: solo pedidos cargados con fecha anterior a hoy
+  if (activeTab === 'historico') {
+    const filtered = pedidos.filter(p => {
+      const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
+      return p.status==='cargado' && p.fecha && p.fecha < hoy
+        && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf);
+    });
+    document.getElementById('countLbl').textContent = filtered.length + ' pedido'+(filtered.length!==1?'s':'');
+    if (activeView==='table') { renderTable(filtered); return; }
+    renderHistorico(filtered, hoy);
+    return;
+  }
+
   const sm = {pendientes:'pendiente',terminado:'terminado',cargados:'cargado'};
-  const ts = sm[activeTab]; // undefined when activeTab==='todos'
+  const ts = sm[activeTab];
   const filtered = pedidos.filter(p => {
     const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
     const fechaOk = (!fd || (p.fecha && p.fecha >= fd)) && (!fh || (p.fecha && p.fecha <= fh));
-    const statusOk = activeTab==='todos' ? true : p.status===ts;
+    let statusOk;
+    if (activeTab === 'todos') {
+      // Todos: excluir cargados de días anteriores (van a Histórico)
+      statusOk = !(p.status==='cargado' && p.fecha && p.fecha < hoy);
+    } else if (activeTab === 'cargados') {
+      // Cargados: solo los cargados de hoy
+      statusOk = p.status==='cargado' && (!p.fecha || p.fecha >= hoy);
+    } else {
+      statusOk = p.status===ts;
+    }
     return statusOk && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf) && fechaOk;
   });
   document.getElementById('countLbl').textContent = filtered.length + ' pedido'+(filtered.length!==1?'s':'');
   if (activeView==='table') { renderTable(filtered); return; }
   renderCards(filtered);
+}
+
+function renderHistorico(filtered, hoyStr) {
+  const bannerHtml = `<div class="hist-banner">
+    <div class="hist-banner-icon">🕐</div>
+    <div class="hist-banner-txt">
+      <div class="hist-banner-date">📦 Pedidos cargados de días anteriores</div>
+      <div class="hist-banner-sub">Registros anteriores a hoy · Solo lectura</div>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:13px;font-weight:700;color:#4527A0">${filtered.length}</div>
+  </div>`;
+
+  if (!filtered.length) {
+    document.getElementById('listArea').innerHTML = bannerHtml + `<div class="empty"><div class="empty-icon">🕐</div><div class="empty-txt">Sin pedidos históricos</div><div class="empty-sub">No hay pedidos cargados de días anteriores</div></div>`;
+    return;
+  }
+  const groups={};
+  filtered.forEach(p=>{ const g=p.grupo||'—'; if(!groups[g]) groups[g]=[]; groups[g].push(p); });
+  let html=bannerHtml;
+  for(const [g,items] of Object.entries(groups)) {
+    html+=`<div class="group-header"><div class="group-badge">🏢 ${g}<span class="group-count">${items.length}</span></div><div class="group-line"></div></div>`;
+    items.forEach(p=>{ html+=cardHtmlHistorico(p); });
+  }
+  document.getElementById('listArea').innerHTML=html;
+}
+
+// Card de histórico: igual que cardHtml pero sin botones de acción (solo lectura)
+function cardHtmlHistorico(p) {
+  const pillClass={pendiente:'pill-pendiente',terminado:'pill-terminado',revision:'pill-revision',cargado:'pill-cargado'}[p.status]||'pill-pendiente';
+  const pillLabel={pendiente:'Confección',terminado:'Terminado',revision:'Revisión',cargado:'Cargado'}[p.status]||'—';
+  const fecha=p.fecha?new Date(p.fecha+'T00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'';
+  let cargaBlock='';
+  if(p.status==='cargado') {
+    cargaBlock=`<div class="carga-banner">${p.hora?`<div class="cb-item"><div class="cb-label">⏰ Hora carga</div><div class="cb-val">${p.hora}</div></div>`:''} ${p.hora_salida?`<div class="cb-item"><div class="cb-label">🕐 Hora salida</div><div class="cb-val" style="color:var(--status-rev)">${p.hora_salida}</div></div>`:''} ${p.muelle?`<div class="cb-item"><div class="cb-label">🚪 Muelle</div><div class="cb-val">${p.muelle}</div></div>`:''} ${p.transportista?`<div class="cb-item"><div class="cb-label">🚚 Transportista</div><div class="cb-val">${p.transportista}</div></div>`:''}</div>`;
+  }
+  return `<div class="pedido-card status-${p.status}" style="opacity:.88">
+    <div class="pedido-top">${p.num?`<span class="pedido-num">#${p.num}</span>`:''}<span class="pedido-empresa">${p.grupo||'—'}</span>${fecha?`<span class="pedido-fecha">${fecha}</span>`:''}<span class="status-pill ${pillClass}">${pillLabel}</span><span style="margin-left:auto;font-size:9px;font-family:var(--font-mono);color:#9575CD;background:#EDE7F6;padding:2px 7px;border-radius:10px;letter-spacing:.3px">HISTÓRICO</span></div>
+    <div class="pedido-body">
+      <div class="info-row">
+        ${p.producto?`<div class="info-block md"><div class="info-label">📦 Producto</div><span class="tag tag-producto">${p.producto}</span></div>`:''}
+        ${p.ref?`<div class="info-block lg"><div class="info-label">Referencia</div><div class="info-val">${p.ref}</div></div>`:''}
+        ${p.uds?`<div class="info-block sm"><div class="info-label">Palets</div><span class="tag tag-palets">${p.uds}</span></div>`:''}
+        ${p.pais?`<div class="info-block md"><div class="info-label">País</div><span class="tag tag-pais">${p.pais}</span></div>`:''}
+      </div>
+      <div class="info-row">
+        ${p.mat1?`<div class="info-block md"><div class="info-label">🚛 Tractora</div><span class="tag tag-mat1">${p.mat1}</span></div>`:''}
+        ${p.mat2?`<div class="info-block md"><div class="info-label">🔗 Remolque</div><span class="tag tag-mat2">${p.mat2}</span></div>`:''}
+        ${p.transportista?`<div class="info-block md"><div class="info-label">🚚 Transportista</div><span class="tag tag-trans">${p.transportista}</span></div>`:''}
+        ${p.muelle?`<div class="info-block sm"><div class="info-label">🚪 Muelle</div><span class="tag tag-muelle">${p.muelle}</span></div>`:''}
+        ${p.hora?`<div class="info-block sm"><div class="info-label">⏰ Hora</div><span class="tag tag-hora">${p.hora}</span></div>`:''}
+      </div>
+      ${cargaBlock}
+      ${p.notas?`<div class="notes">💬 ${p.notas}</div>`:''}
+    </div>
+  </div>`;
 }
 
 function renderCards(filtered) {
@@ -1243,7 +1346,7 @@ function _buildPrintHtml(tab, fecha, countTxt, tableHtml) {
 function imprimirTabla() {
   const tableHtml = document.getElementById('tableArea').innerHTML;
   const fecha = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const tab = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados'}[activeTab]||'';
+  const tab = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados',historico:'Histórico'}[activeTab]||'';
   const countTxt = document.getElementById('countLbl').textContent;
   const html = _buildPrintHtml(tab, fecha, countTxt, tableHtml);
   const win = window.open('','_blank','width=960,height=700');
@@ -1253,7 +1356,7 @@ function imprimirTabla() {
 
 async function compartirTabla() {
   const fecha = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const tab = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados'}[activeTab]||'';
+  const tab = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados',historico:'Histórico'}[activeTab]||'';
   const countTxt = document.getElementById('countLbl').textContent;
 
   // Obtener pedidos filtrados actuales leyendo las filas de la tabla del DOM
@@ -1265,8 +1368,10 @@ async function compartirTabla() {
   const fh = document.getElementById('fFechaHasta').value;
   const sm = {pendientes:'pendiente',terminado:'terminado',cargados:'cargado'};
   const ts = sm[activeTab];
+  const ayer = getAyerStr();
   const filtered = pedidos.filter(p => {
     const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
+    if (activeTab==='historico') return p.fecha===ayer&&(!q||txt.includes(q))&&(!gf||p.grupo===gf)&&(!mf2||p.muelle===mf2)&&(!pf||p.producto===pf);
     const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
     const statusOk = activeTab==='todos' ? true : p.status===ts;
     return statusOk&&(!q||txt.includes(q))&&(!gf||p.grupo===gf)&&(!mf2||p.muelle===mf2)&&(!pf||p.producto===pf)&&fechaOk;
