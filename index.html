@@ -1069,6 +1069,7 @@ function renderTable(filtered) {
     <td style="color:var(--status-rev);font-weight:700">${p.mat1||'—'}</td>
     <td style="color:#6A1B9A;font-weight:700">${p.mat2||'—'}</td>
     <td style="color:var(--status-load);font-weight:700">${p.hora||'—'}</td>
+    <td style="color:var(--status-rev);font-weight:700">${p.hora_salida||'—'}</td>
     <td style="color:var(--sap-blue)">${p.muelle||'—'}</td>
     <td>${p.transportista||'—'}</td>
     ${showStatus?`<td style="color:${statusColor[p.status]||'var(--t2)'};font-weight:700">${statusLabel[p.status]||p.status||'—'}</td>`:''}
@@ -1080,7 +1081,7 @@ function renderTable(filtered) {
   </tr>`;
   }).join('');
   const thStatus = showStatus ? `<th>Estado</th>` : '';
-  document.getElementById('tableArea').innerHTML=`<div class="table-wrap"><table><thead><tr><th>#</th><th>Cliente</th><th>Producto</th><th>Ref</th><th>Palets</th><th>Tractora</th><th>Remolque</th><th>Hora</th><th>Muelle</th><th>Transportista</th>${thStatus}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  document.getElementById('tableArea').innerHTML=`<div class="table-wrap"><table><thead><tr><th>#</th><th>Cliente</th><th>Producto</th><th>Ref</th><th>Palets</th><th>Tractora</th><th>Remolque</th><th>H. Carga</th><th>H. Salida</th><th>Muelle</th><th>Transportista</th>${thStatus}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 document.addEventListener('click', function(e) {
@@ -1251,15 +1252,71 @@ function imprimirTabla() {
 }
 
 async function compartirTabla() {
-  const tableHtml = document.getElementById('tableArea').innerHTML;
   const fecha = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
   const tab = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados'}[activeTab]||'';
   const countTxt = document.getElementById('countLbl').textContent;
-  const html = _buildPrintHtml(tab, fecha, countTxt, tableHtml);
-  const win = window.open('','_blank','width=960,height=700');
-  win.document.write(html + `<script>window.onload=()=>{window.print();}<\/script>`);
-  win.document.close();
-  toast('📄 Abriendo informe PDF...');
+
+  // Obtener pedidos filtrados actuales leyendo las filas de la tabla del DOM
+  const q  = document.getElementById('searchInput').value.toLowerCase();
+  const gf = document.getElementById('fGrupo').value;
+  const mf2 = document.getElementById('fMuelle').value;
+  const pf = document.getElementById('fProducto').value;
+  const fd = document.getElementById('fFechaDesde').value;
+  const fh = document.getElementById('fFechaHasta').value;
+  const sm = {pendientes:'pendiente',terminado:'terminado',cargados:'cargado'};
+  const ts = sm[activeTab];
+  const filtered = pedidos.filter(p => {
+    const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
+    const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
+    const statusOk = activeTab==='todos' ? true : p.status===ts;
+    return statusOk&&(!q||txt.includes(q))&&(!gf||p.grupo===gf)&&(!mf2||p.muelle===mf2)&&(!pf||p.producto===pf)&&fechaOk;
+  });
+
+  const statusEmoji={pendiente:'🟡',terminado:'🔵',revision:'🟠',cargado:'🟢'};
+  const lines = [];
+  lines.push(`🚛 *Cargas Pro — ${tab}*`);
+  lines.push(`📅 ${fecha} · ${countTxt}`);
+  lines.push('');
+
+  filtered.forEach(p => {
+    const emoji = statusEmoji[p.status]||'⚪';
+    lines.push(`${emoji} *#${p.num||'—'} · ${p.grupo||'—'}*`);
+    if(p.producto||p.ref) lines.push(`   📦 ${[p.producto,p.ref].filter(Boolean).join(' · ')}${p.uds?' · '+p.uds+' pal':''}`);
+    if(p.mat1||p.mat2)    lines.push(`   🚛 ${[p.mat1,p.mat2].filter(Boolean).join(' / ')}`);
+    if(p.transportista)   lines.push(`   🚚 ${p.transportista}`);
+    const tiempos=[];
+    if(p.hora)        tiempos.push(`⏰ ${p.hora}`);
+    if(p.hora_salida) tiempos.push(`🕐 Salida: ${p.hora_salida}`);
+    if(p.muelle)      tiempos.push(`🚪 Muelle ${p.muelle}`);
+    if(tiempos.length) lines.push(`   ${tiempos.join(' · ')}`);
+    if(p.notas)       lines.push(`   💬 ${p.notas}`);
+    lines.push('');
+  });
+  lines.push(`——————————————`);
+  lines.push(`SAT GUADEX · Palma del Río`);
+
+  const texto = lines.join('\n');
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: `Cargas Pro — ${tab}`, text: texto });
+      toast('📱 Compartido');
+    } catch(e) {
+      if (e.name !== 'AbortError') {
+        // fallback: copiar al portapapeles
+        await navigator.clipboard.writeText(texto);
+        toast('📋 Copiado al portapapeles');
+      }
+    }
+  } else {
+    // Navegador sin Web Share API: copiar al portapapeles
+    try {
+      await navigator.clipboard.writeText(texto);
+      toast('📋 Copiado al portapapeles');
+    } catch(e) {
+      toast('❌ No se pudo compartir');
+    }
+  }
 }
 
 window.render=render; window.exportarCSV=exportarCSV; window.imprimirTabla=imprimirTabla;
