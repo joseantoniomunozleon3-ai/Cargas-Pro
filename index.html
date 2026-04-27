@@ -1359,21 +1359,24 @@ async function compartirTabla() {
   const tab = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados',historico:'Histórico'}[activeTab]||'';
   const countTxt = document.getElementById('countLbl').textContent;
 
-  // Obtener pedidos filtrados actuales leyendo las filas de la tabla del DOM
-  const q  = document.getElementById('searchInput').value.toLowerCase();
-  const gf = document.getElementById('fGrupo').value;
+  const q   = document.getElementById('searchInput').value.toLowerCase();
+  const gf  = document.getElementById('fGrupo').value;
   const mf2 = document.getElementById('fMuelle').value;
-  const pf = document.getElementById('fProducto').value;
-  const fd = document.getElementById('fFechaDesde').value;
-  const fh = document.getElementById('fFechaHasta').value;
-  const sm = {pendientes:'pendiente',terminado:'terminado',cargados:'cargado'};
-  const ts = sm[activeTab];
-  const ayer = getAyerStr();
+  const pf  = document.getElementById('fProducto').value;
+  const fd  = document.getElementById('fFechaDesde').value;
+  const fh  = document.getElementById('fFechaHasta').value;
+  const hoy = new Date().toISOString().slice(0, 10);
+  const sm  = {pendientes:'pendiente',terminado:'terminado',cargados:'cargado'};
+  const ts  = sm[activeTab];
+
   const filtered = pedidos.filter(p => {
     const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
-    if (activeTab==='historico') return p.fecha===ayer&&(!q||txt.includes(q))&&(!gf||p.grupo===gf)&&(!mf2||p.muelle===mf2)&&(!pf||p.producto===pf);
+    if (activeTab==='historico') return p.status==='cargado' && p.fecha && p.fecha < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf2||p.muelle===mf2) && (!pf||p.producto===pf);
     const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
-    const statusOk = activeTab==='todos' ? true : p.status===ts;
+    let statusOk;
+    if (activeTab==='todos') statusOk = !(p.status==='cargado' && p.fecha && p.fecha < hoy);
+    else if (activeTab==='cargados') statusOk = p.status==='cargado' && (!p.fecha || p.fecha >= hoy);
+    else statusOk = p.status===ts;
     return statusOk&&(!q||txt.includes(q))&&(!gf||p.grupo===gf)&&(!mf2||p.muelle===mf2)&&(!pf||p.producto===pf)&&fechaOk;
   });
 
