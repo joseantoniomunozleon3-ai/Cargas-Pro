@@ -699,6 +699,7 @@ tr:hover td{background:#FFFDE7}
     <span class="search-icon">🔍</span>
     <input id="searchInput" placeholder="Buscar pedido, cliente, matrícula..." oninput="render()">
   </div>
+  <button class="filter-btn" id="hoyBtn" onclick="filtrarHoy()" title="Pedidos de hoy" style="font-size:11px;font-weight:700;width:auto;padding:0 10px;letter-spacing:.3px;">📅 Hoy</button>
   <button class="filter-btn" id="fBtn" onclick="toggleFilter()">⚙️</button>
 </div>
 
@@ -707,8 +708,8 @@ tr:hover td{background:#FFFDE7}
   <select id="fGrupo" onchange="render()"><option value="">Todos los clientes</option></select>
   <select id="fMuelle" onchange="render()"><option value="">Todos los muelles</option></select>
   <select id="fProducto" onchange="render()"><option value="">Todos los productos</option></select>
-  <input type="date" id="fFechaDesde" onchange="render()">
-  <input type="date" id="fFechaHasta" onchange="render()">
+  <input type="date" id="fFechaDesde" onchange="filtroHoyActivo=false;resetHoyBtn();render()">
+  <input type="date" id="fFechaHasta" onchange="filtroHoyActivo=false;resetHoyBtn();render()">
 </div>
 
 <!-- MAIN CONTENT -->
@@ -962,6 +963,28 @@ function setView(v, el) {
 function toggleFilter() {
   document.getElementById('filterPanel').classList.toggle('open');
   document.getElementById('fBtn').classList.toggle('on');
+}
+
+let filtroHoyActivo = false;
+function resetHoyBtn(){const b=document.getElementById("hoyBtn");if(b){b.style.background="";b.style.color="";b.style.borderColor="";}}
+function filtrarHoy() {
+  const hoy = new Date().toISOString().slice(0,10);
+  filtroHoyActivo = !filtroHoyActivo;
+  const btn = document.getElementById("hoyBtn");
+  if (filtroHoyActivo) {
+    document.getElementById("fFechaDesde").value = hoy;
+    document.getElementById("fFechaHasta").value = hoy;
+    btn.style.background = "var(--dhl-yellow)";
+    btn.style.color = "var(--dhl-dark)";
+    btn.style.borderColor = "var(--dhl-yellow)";
+  } else {
+    document.getElementById("fFechaDesde").value = "";
+    document.getElementById("fFechaHasta").value = "";
+    btn.style.background = "";
+    btn.style.color = "";
+    btn.style.borderColor = "";
+  }
+  render();
 }
 
 function updateLists() {
