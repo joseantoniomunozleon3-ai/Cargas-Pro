@@ -660,6 +660,9 @@ tr:hover td{background:#FFFDE7}
   </div>
   <div class="header-right">
     <div class="today-badge" id="todayDate">— <span class="sync-dot saving" id="syncDot"></span></div>
+    <button class="export-btn" onclick="exportarJSON()" title="Exportar JSON" style="width:auto;padding:5px 10px;font-size:11px;font-weight:700;">💾 Exportar datos</button>
+    <button class="export-btn" onclick="document.getElementById('importJsonInput').click()" title="Importar JSON" style="width:auto;padding:5px 10px;font-size:11px;font-weight:700;">📥 Importar datos</button>
+    <input type="file" id="importJsonInput" accept=".json" style="display:none" onchange="importarJSON(event)">
     <button class="export-btn" onclick="exportarCSV()" title="Exportar CSV">📤</button>
   </div>
 </header>
@@ -735,6 +738,7 @@ tr:hover td{background:#FFFDE7}
   <div class="nav-item" id="nav-todos" onclick="setTab('todos')"><span>📋</span>Todos</div>
   <div class="nav-item" id="nav-carg" onclick="setTab('cargados')"><span>🚛</span>Cargados</div>
   <div class="nav-item" id="nav-hist" onclick="setTab('historico')"><span>🕐</span>Histórico</div>
+  <div class="nav-item" onclick="repararApp()" title="Reparar app"><span>🔧</span>Reparar</div>
 </div>
 
 <!-- TOAST -->
@@ -1427,7 +1431,53 @@ async function compartirTabla() {
   }
 }
 
-window.render=render; window.exportarCSV=exportarCSV; window.imprimirTabla=imprimirTabla;
+function exportarJSON() {
+  if (!pedidos || pedidos.length === 0) { toast('⚠️ No hay pedidos para exportar'); return; }
+  const fecha = new Date().toISOString().slice(0,10);
+  const payload = { exportado: new Date().toISOString(), empresa: 'SAT GUADEX S.L.', total: pedidos.length, pedidos };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `CargasPro_${fecha}.json`; a.click();
+  URL.revokeObjectURL(url);
+  toast(`✅ JSON exportado · ${pedidos.length} pedidos`);
+}
+
+function importarJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const lista = Array.isArray(data) ? data : (data.pedidos || []);
+      if (!lista.length) { toast('⚠️ El archivo no contiene pedidos'); return; }
+      confirm2('📥','Importar JSON',
+        `¿Importar ${lista.length} pedidos? Se añadirán a los datos existentes.`,
+        'Importar', '',
+        async () => {
+          let ok = 0, err = 0;
+          setSyncStatus('saving');
+          for (const p of lista) {
+            try {
+              const { id: _id, ...rest } = p;
+              await col.add({ ...rest, _importado: new Date().toISOString() });
+              ok++;
+            } catch(_) { err++; }
+          }
+          setSyncStatus('');
+          toast(`✅ Importados: ${ok}${err ? ' · ❌ Errores: '+err : ''}`);
+        }
+      );
+    } catch(_) {
+      toast('❌ Archivo JSON inválido');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+window.render=render; window.exportarCSV=exportarCSV; window.exportarJSON=exportarJSON; window.importarJSON=importarJSON; window.imprimirTabla=imprimirTabla;
 window.compartirTabla=compartirTabla; window.closeConfirm=closeConfirm; window.doConfirmOk=doConfirmOk;
 window.setTab=setTab; window.setView=setView; window.toggleFilter=toggleFilter;
 window.openPedidoModal=openPedidoModal; window.closePedidoModal=closePedidoModal; window.savePedido=savePedido;
@@ -1482,6 +1532,116 @@ if(isIOS&&!isStandalone){
   },2500);
 }
 window.addEventListener('appinstalled',()=>{document.getElementById('pwa-banner')?.remove();toast('🎉 ¡App instalada!');});
+
+// ══ SERVICE WORKER ══
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'cargas-pro-v1';
+const CORE = [
+  'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap',
+  'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js'
+];
+
+self.addEventListener('install', e => {
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE).catch(()=>{})));
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  const url = e.request.url;
+  // Firebase/Firestore: siempre red, sin caché
+  if (url.includes('firestore.googleapis.com') || url.includes('firebase')) {
+    e.respondWith(fetch(e.request).catch(() => new Response('', {status: 503})));
+    return;
+  }
+  // Fuentes y assets estáticos: cache-first
+  if (url.includes('fonts.g') || url.includes('gstatic.com')) {
+    e.respondWith(
+      caches.match(e.request).then(cached => cached || fetch(e.request).then(r => {
+        const clone = r.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return r;
+      }))
+    );
+    return;
+  }
+  // HTML principal: network-first, caché como respaldo
+  e.respondWith(
+    fetch(e.request).then(r => {
+      if (r.ok) {
+        const clone = r.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+      }
+      return r;
+    }).catch(() => caches.match(e.request))
+  );
+});
+
+self.addEventListener('message', e => {
+  if (e.data === 'SKIP_WAITING') self.skipWaiting();
+  if (e.data === 'CLEAR_CACHE') {
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => e.source.postMessage('CACHE_CLEARED'));
+  }
+});
+  `;
+  const swBlob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl  = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+          toast('🔄 Actualización disponible — recarga la app');
+        }
+      });
+    });
+  }).catch(()=>{});
+}
+
+// ══ REPARAR APP ══
+function repararApp() {
+  confirm2('🔧','Reparar aplicación',
+    'Limpia la caché y recarga la app. Útil si algo no funciona bien.',
+    'Reparar', '',
+    async () => {
+      toast('🔧 Limpiando caché...', 3000);
+      try {
+        if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg) {
+            const sw = reg.active || reg.waiting || reg.installing;
+            if (sw) {
+              sw.postMessage('CLEAR_CACHE');
+              await new Promise(r => {
+                navigator.serviceWorker.addEventListener('message', e => {
+                  if (e.data === 'CACHE_CLEARED') r();
+                }, {once:true});
+                setTimeout(r, 2000);
+              });
+            }
+          }
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }
+      } catch(_) {}
+      setTimeout(() => location.reload(true), 500);
+    }
+  );
+}
+window.repararApp = repararApp;
 
 </script>
 </body>
