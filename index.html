@@ -1118,6 +1118,10 @@ const col = db.collection('pedidos');
 const colMov = db.collection('movimientos_palets');
 
 let pedidos = [];
+// ════ FIX BUG: día de carga real (no fecha planificada del pedido) ════
+// Si un pedido tiene cargadoAt (fecha real en que se pulsó "Cargado") usar esa,
+// si no, usar p.fecha por compatibilidad con pedidos antiguos (migración suave).
+function cargDay(p){ return p.cargadoAt || p.fecha || ''; }
 let movimientos = [];
 let epActiveTab = 'movs';
 let editMovId = null;
@@ -1267,8 +1271,8 @@ function updateStats() {
   const hoy = new Date().toISOString().slice(0, 10);
   const pend=pedidos.filter(p=>p.status==='pendiente').length;
   const term=pedidos.filter(p=>p.status==='terminado').length;
-  const carg=pedidos.filter(p=>p.status==='cargado' && (!p.fecha || p.fecha >= hoy)).length;
-  const hist=pedidos.filter(p=>p.status==='cargado' && p.fecha && p.fecha < hoy).length;
+  const carg=pedidos.filter(p=>p.status==='cargado' && (!cargDay(p) || cargDay(p) >= hoy)).length;
+  const hist=pedidos.filter(p=>p.status==='cargado' && cargDay(p) && cargDay(p) < hoy).length;
   // Total = todos los pedidos que NO están cargados (pendientes + terminados + revisión)
   const totalActivos = pedidos.filter(p=>p.status!=='cargado').length;
   document.getElementById('s-total').textContent=totalActivos;
@@ -1297,7 +1301,7 @@ function render() {
   if (activeTab === 'historico') {
     const filtered = pedidos.filter(p => {
       const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
-      return p.status==='cargado' && p.fecha && p.fecha < hoy
+      return p.status==='cargado' && cargDay(p) && cargDay(p) < hoy
         && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf);
     });
     document.getElementById('countLbl').textContent = filtered.length + ' pedido'+(filtered.length!==1?'s':'');
@@ -1310,14 +1314,16 @@ function render() {
   const ts = sm[activeTab];
   const filtered = pedidos.filter(p => {
     const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
-    const fechaOk = (!fd || (p.fecha && p.fecha >= fd)) && (!fh || (p.fecha && p.fecha <= fh));
+    // En Cargados/Histórico filtramos por la fecha REAL de carga, no la planificada
+    const dateField = (activeTab === 'cargados' || activeTab === 'historico') ? cargDay(p) : p.fecha;
+    const fechaOk = (!fd || (dateField && dateField >= fd)) && (!fh || (dateField && dateField <= fh));
     let statusOk;
     if (activeTab === 'todos') {
       // Todos: excluir cargados de días anteriores (van a Histórico)
-      statusOk = !(p.status==='cargado' && p.fecha && p.fecha < hoy);
+      statusOk = !(p.status==='cargado' && cargDay(p) && cargDay(p) < hoy);
     } else if (activeTab === 'cargados') {
-      // Cargados: solo los cargados de hoy
-      statusOk = p.status==='cargado' && (!p.fecha || p.fecha >= hoy);
+      // Cargados: solo los cargados HOY (por fecha real de carga)
+      statusOk = p.status==='cargado' && (!cargDay(p) || cargDay(p) >= hoy);
     } else {
       statusOk = p.status===ts;
     }
@@ -1555,6 +1561,7 @@ async function confirmarCarga() {
   const ec = parseInt(document.getElementById('c-ec').value)||0;
   const ed = parseInt(document.getElementById('c-ed').value)||0;
   const updated={...p, status:'cargado',
+    cargadoAt: new Date().toISOString().slice(0,10),
     hora:document.getElementById('c-hora').value,
     hora_salida:document.getElementById('c-hora-salida').value,
     muelle:document.getElementById('c-muelle').value.trim(),
@@ -1666,11 +1673,11 @@ function imprimirTabla() {
     const ts = sm[activeTab];
     return pedidos.filter(p=>{
       const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
-      if(activeTab==='historico') return p.status==='cargado' && p.fecha && p.fecha < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf);
+      if(activeTab==='historico') return p.status==='cargado' && cargDay(p) && cargDay(p) < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf);
       const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
       let statusOk;
-      if(activeTab==='todos') statusOk = !(p.status==='cargado' && p.fecha && p.fecha < hoy);
-      else if(activeTab==='cargados') statusOk = p.status==='cargado' && (!p.fecha || p.fecha >= hoy);
+      if(activeTab==='todos') statusOk = !(p.status==='cargado' && cargDay(p) && cargDay(p) < hoy);
+      else if(activeTab==='cargados') statusOk = p.status==='cargado' && (!cargDay(p) || cargDay(p) >= hoy);
       else statusOk = p.status===ts;
       return statusOk && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf) && fechaOk;
     });
@@ -1701,11 +1708,11 @@ async function compartirTabla() {
 
   const filtered = pedidos.filter(p => {
     const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
-    if (activeTab==='historico') return p.status==='cargado' && p.fecha && p.fecha < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf2||p.muelle===mf2) && (!pf||p.producto===pf);
+    if (activeTab==='historico') return p.status==='cargado' && cargDay(p) && cargDay(p) < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf2||p.muelle===mf2) && (!pf||p.producto===pf);
     const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
     let statusOk;
-    if (activeTab==='todos') statusOk = !(p.status==='cargado' && p.fecha && p.fecha < hoy);
-    else if (activeTab==='cargados') statusOk = p.status==='cargado' && (!p.fecha || p.fecha >= hoy);
+    if (activeTab==='todos') statusOk = !(p.status==='cargado' && cargDay(p) && cargDay(p) < hoy);
+    else if (activeTab==='cargados') statusOk = p.status==='cargado' && (!cargDay(p) || cargDay(p) >= hoy);
     else statusOk = p.status===ts;
     return statusOk&&(!q||txt.includes(q))&&(!gf||p.grupo===gf)&&(!mf2||p.muelle===mf2)&&(!pf||p.producto===pf)&&fechaOk;
   });
