@@ -842,6 +842,7 @@ body.ep-active .fab{display:none !important}
   <div class="nav-item" id="nav-carg" onclick="setTab('cargados')"><span>🚛</span>Cargados</div>
   <div class="nav-item" id="nav-hist" onclick="setTab('historico')"><span>🕐</span>Histórico</div>
   <div class="nav-item" id="nav-ep" onclick="abrirEuropalets()"><span>🟫</span>Europalets</div>
+  <div class="nav-item" onclick="limpiarPedidosDemo()" title="Borrar pedidos de ejemplo"><span>🧹</span>Limpiar</div>
   <div class="nav-item" onclick="repararApp()" title="Reparar app"><span>🔧</span>Reparar</div>
 </div>
 
@@ -1200,9 +1201,9 @@ function setView(v, el) {
   document.getElementById('listArea').style.display = v==='cards' ? '' : 'none';
   document.getElementById('tableArea').style.display = v==='table' ? '' : 'none';
   const btnImp = document.getElementById('btnImprimir');
-  if(btnImp) btnImp.style.display = v==='table' ? '' : 'none';
+  if(btnImp) btnImp.style.display = '';
   const btnComp = document.getElementById('btnCompartir');
-  if(btnComp) btnComp.style.display = v==='table' ? '' : 'none';
+  if(btnComp) btnComp.style.display = '';
   render();
 }
 
@@ -1361,6 +1362,7 @@ function cardHtmlHistorico(p) {
         ${p.producto?`<div class="info-block md"><div class="info-label">📦 Producto</div><span class="tag tag-producto">${p.producto}</span></div>`:''}
         ${p.ref?`<div class="info-block lg"><div class="info-label">Referencia</div><div class="info-val">${p.ref}</div></div>`:''}
         ${p.uds?`<div class="info-block sm"><div class="info-label">Palets</div><span class="tag tag-palets">${p.uds}</span></div>`:''}
+        ${p.europalets?`<div class="info-block sm"><div class="info-label">🟫 Europalets</div><span class="tag tag-palets" style="background:#FFE0B2;color:#6D4C41;border-color:#FFCC80">${p.europalets}</span></div>`:''}
         ${p.pais?`<div class="info-block md"><div class="info-label">País</div><span class="tag tag-pais">${p.pais}</span></div>`:''}
       </div>
       <div class="info-row">
@@ -1412,6 +1414,7 @@ function cardHtml(p) {
         ${p.producto?`<div class="info-block md"><div class="info-label">📦 Producto</div><span class="tag tag-producto">${p.producto}</span></div>`:''}
         ${p.ref?`<div class="info-block lg"><div class="info-label">Referencia</div><div class="info-val">${p.ref}</div></div>`:''}
         ${p.uds?`<div class="info-block sm"><div class="info-label">Palets</div><span class="tag tag-palets">${p.uds}</span></div>`:''}
+        ${p.europalets?`<div class="info-block sm"><div class="info-label">🟫 Europalets</div><span class="tag tag-palets" style="background:#FFE0B2;color:#6D4C41;border-color:#FFCC80">${p.europalets}</span></div>`:''}
         ${p.pais?`<div class="info-block md"><div class="info-label">País</div><span class="tag tag-pais">${p.pais}</span></div>`:''}
       </div>
       <div class="info-row">
@@ -1444,6 +1447,7 @@ function renderTable(filtered) {
     <td style="color:var(--sap-blue)">${p.producto||'—'}</td>
     <td>${p.ref||'—'}</td>
     <td style="color:var(--status-load);font-weight:700">${p.uds||'—'}</td>
+    <td style="color:#6D4C41;font-weight:700">${p.europalets||'—'}</td>
     <td style="color:var(--status-rev);font-weight:700">${p.mat1||'—'}</td>
     <td style="color:#6A1B9A;font-weight:700">${p.mat2||'—'}</td>
     <td style="color:var(--status-load);font-weight:700">${p.hora||'—'}</td>
@@ -1459,7 +1463,7 @@ function renderTable(filtered) {
   </tr>`;
   }).join('');
   const thStatus = showStatus ? `<th>Estado</th>` : '';
-  document.getElementById('tableArea').innerHTML=`<div class="table-wrap"><table><thead><tr><th>#</th><th>Cliente</th><th>Producto</th><th>Ref</th><th>Palets</th><th>Tractora</th><th>Remolque</th><th>H. Carga</th><th>H. Salida</th><th>Muelle</th><th>Transportista</th>${thStatus}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  document.getElementById('tableArea').innerHTML=`<div class="table-wrap"><table><thead><tr><th>#</th><th>Cliente</th><th>Producto</th><th>Ref</th><th>Palets</th><th>🟫 Europalets</th><th>Tractora</th><th>Remolque</th><th>H. Carga</th><th>H. Salida</th><th>Muelle</th><th>Transportista</th>${thStatus}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 document.addEventListener('click', function(e) {
@@ -1579,8 +1583,8 @@ function delPedido(id) {
 }
 
 function exportarCSV() {
-  const headers=['#','Cliente','Producto','Referencia','Palets','País','Tractora','Remolque','Hora carga','Hora salida','Muelle','Transportista','Estado','Fecha','Notas'];
-  const rows=pedidos.map(p=>[p.num,p.grupo,p.producto,p.ref,p.uds,p.pais,p.mat1,p.mat2,p.hora,p.hora_salida,p.muelle,p.transportista,p.status,p.fecha,p.notas].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const headers=['#','Cliente','Producto','Referencia','Palets','Europalets','País','Tractora','Remolque','Hora carga','Hora salida','Muelle','Transportista','Estado','Fecha','Notas'];
+  const rows=pedidos.map(p=>[p.num,p.grupo,p.producto,p.ref,p.uds,p.europalets,p.pais,p.mat1,p.mat2,p.hora,p.hora_salida,p.muelle,p.transportista,p.status,p.fecha,p.notas].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
   const csv=[headers.join(','),...rows].join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);
@@ -1636,10 +1640,38 @@ function _buildPrintHtml(tab, fecha, countTxt, tableHtml) {
 }
 
 function imprimirTabla() {
-  const tableHtml = document.getElementById('tableArea').innerHTML;
+  // Construir siempre la tabla a partir de los datos filtrados (funciona en cards y table)
   const fecha = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
   const tab = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados',historico:'Histórico'}[activeTab]||'';
   const countTxt = document.getElementById('countLbl').textContent;
+  // Asegurar que tableArea esté actualizado
+  const prevView = activeView; const wasHidden = document.getElementById('tableArea').style.display==='none';
+  if(wasHidden){ document.getElementById('tableArea').style.display=''; }
+  // Forzar render de tabla
+  const filtered = (function(){
+    const q = (document.getElementById('searchInput').value||'').toLowerCase();
+    const gf = document.getElementById('fGrupo').value;
+    const mf = document.getElementById('fMuelle').value;
+    const pf = document.getElementById('fProducto').value;
+    const fd = document.getElementById('fFechaDesde').value;
+    const fh = document.getElementById('fFechaHasta').value;
+    const hoy = new Date().toISOString().slice(0,10);
+    const sm = {pendientes:'pendiente',terminado:'terminado',cargados:'cargado'};
+    const ts = sm[activeTab];
+    return pedidos.filter(p=>{
+      const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
+      if(activeTab==='historico') return p.status==='cargado' && p.fecha && p.fecha < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf);
+      const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
+      let statusOk;
+      if(activeTab==='todos') statusOk = !(p.status==='cargado' && p.fecha && p.fecha < hoy);
+      else if(activeTab==='cargados') statusOk = p.status==='cargado' && (!p.fecha || p.fecha >= hoy);
+      else statusOk = p.status===ts;
+      return statusOk && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf) && fechaOk;
+    });
+  })();
+  renderTable(filtered);
+  const tableHtml = document.getElementById('tableArea').innerHTML;
+  if(wasHidden){ document.getElementById('tableArea').style.display='none'; }
   const html = _buildPrintHtml(tab, fecha, countTxt, tableHtml);
   const win = window.open('','_blank','width=960,height=700');
   win.document.write(html + `<script>window.onload=()=>{window.print();}<\/script>`);
@@ -1681,7 +1713,7 @@ async function compartirTabla() {
   filtered.forEach(p => {
     const emoji = statusEmoji[p.status]||'⚪';
     lines.push(`${emoji} *#${p.num||'—'} · ${p.grupo||'—'}*`);
-    if(p.producto||p.ref) lines.push(`   📦 ${[p.producto,p.ref].filter(Boolean).join(' · ')}${p.uds?' · '+p.uds+' pal':''}`);
+    if(p.producto||p.ref) lines.push(`   📦 ${[p.producto,p.ref].filter(Boolean).join(' · ')}${p.uds?' · '+p.uds+' pal':''}${p.europalets?' · 🟫 '+p.europalets+' europ':''}`);
     if(p.mat1||p.mat2)    lines.push(`   🚛 ${[p.mat1,p.mat2].filter(Boolean).join(' / ')}`);
     if(p.transportista)   lines.push(`   🚚 ${p.transportista}`);
     const tiempos=[];
@@ -2210,6 +2242,28 @@ function syncEuropaletsToEC(){
   }
 }
 window.syncEuropaletsToEC = syncEuropaletsToEC;
+
+// LIMPIEZA UNICA: borra los pedidos de ejemplo que se sembraron desde la app Expo
+async function limpiarPedidosDemo(){
+  const NUMEROS_DEMO = ['001230','001231','001234','001235','001236','001237','001238','001239'];
+  const REFS_DEMO = ['EG-2026-01','AM-2026-15','IB-2026-08','LL-2026-22','FR-2026-04','SC-2026-11','EG-2026-19','AM-2026-21'];
+  const MAT_DEMO = ['1234-ABC','5678-DEF','9012-GHI','3456-JKL','7890-MNO','1357-PQR','2468-STU','8642-VWX'];
+  const candidatos = pedidos.filter(p =>
+    NUMEROS_DEMO.includes((p.num||'').toString()) ||
+    REFS_DEMO.includes(p.ref||'') ||
+    MAT_DEMO.includes(p.mat1||'')
+  );
+  if(candidatos.length===0){ toast('✅ No hay pedidos demo para borrar'); return; }
+  if(!confirm(`Se eliminarán ${candidatos.length} pedidos de ejemplo (los que NO son tuyos):\n\n` +
+              candidatos.map(p=>`#${p.num} · ${p.grupo} · ${p.ref}`).join('\n') +
+              `\n\n¿Continuar?`)) return;
+  let ok=0, fail=0;
+  for(const p of candidatos){
+    try{ await col.doc(p.id).delete(); ok++; } catch(e){ fail++; console.error(e); }
+  }
+  toast(`🧹 Borrados ${ok} pedidos demo${fail?` · ${fail} con error`:''}`);
+}
+window.limpiarPedidosDemo = limpiarPedidosDemo;
 
 // ============== SALDO INICIAL POR TRANSPORTISTA ==============
 function abrirSaldoInicial(transportista){
