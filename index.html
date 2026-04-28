@@ -636,108 +636,6 @@ tr:hover td{background:#FFFDE7}
 .tbl-reabrir:hover{background:#E3F2FD;border-color:var(--sap-blue)}
 .tbl-del:hover{background:#FFEBEE;border-color:var(--dhl-red)}
 @media print{.tbl-actions-cell,.tbl-btn{display:none!important}}
-
-/* === EUROPALETS MÓDULO === */
-.ep-screen{display:none;background:var(--bg);min-height:100vh;padding-bottom:100px}
-.ep-screen.active{display:block}
-.ep-header{
-  background:var(--surface);padding:14px 16px 10px 16px;
-  border-bottom:3px solid var(--dhl-yellow);position:sticky;top:0;z-index:50;
-}
-.ep-h1{font-family:var(--font-body);font-size:18px;font-weight:700;color:var(--t1);letter-spacing:-.3px}
-.ep-h1 small{font-size:11px;color:var(--t3);margin-left:8px;font-weight:500;letter-spacing:.5px}
-.ep-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px 16px;background:var(--surface)}
-.ep-card{
-  background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;
-}
-.ep-card .lbl{font-size:9px;color:var(--t3);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
-.ep-card .num{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--t1);margin-top:4px}
-.ep-card .num.pos{color:#2E7D32}
-.ep-card .num.neg{color:#C62828}
-.ep-tabs{display:flex;gap:6px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto}
-.ep-tab{
-  padding:6px 12px;border-radius:14px;border:1px solid var(--border2);
-  background:var(--surface);color:var(--t2);font-size:11px;font-weight:700;
-  cursor:pointer;white-space:nowrap;letter-spacing:.3px;
-}
-.ep-tab.active{background:var(--dhl-dark);color:var(--dhl-yellow);border-color:var(--dhl-dark)}
-.ep-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:var(--surface)}
-.ep-filters select,.ep-filters input{
-  width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:6px;
-  font-family:var(--font-body);font-size:12px;color:var(--t1);background:var(--surface2);
-}
-.ep-search-row{padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:6px}
-.ep-search-row input{
-  flex:1;padding:8px 12px;border:1px solid var(--border2);border-radius:6px;
-  font-family:var(--font-body);font-size:13px;background:var(--surface2);
-}
-.ep-actions-row{display:flex;gap:6px;padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--border);justify-content:flex-end}
-.ep-btn{
-  padding:8px 12px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);
-  color:var(--t1);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.3px;
-}
-.ep-btn-primary{background:var(--dhl-yellow);color:var(--dhl-dark);border-color:var(--dhl-yellow)}
-.ep-btn-blue{background:var(--sap-blue);color:#fff;border-color:var(--sap-blue)}
-.ep-list{padding:0 12px}
-.ep-mov-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;
-  padding:10px 12px;margin-bottom:8px;
-}
-.ep-mov-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
-.ep-mov-fecha{font-family:var(--font-mono);font-size:11px;color:var(--t3);font-weight:700}
-.ep-mov-cliente{font-size:14px;color:var(--t1);font-weight:700;margin-top:2px}
-.ep-mov-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:8px}
-.ep-mov-item{text-align:center;padding:6px 4px;background:var(--surface2);border-radius:6px}
-.ep-mov-item .l{font-size:9px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.ep-mov-item .v{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--t1);margin-top:2px}
-.ep-mov-item.ec .v{color:#2E7D32}
-.ep-mov-item.ed .v{color:var(--sap-blue)}
-.ep-mov-item.sd .v.pos{color:#2E7D32}
-.ep-mov-item.sd .v.neg{color:#C62828}
-.ep-mov-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--t2)}
-.ep-mov-ref{font-family:var(--font-mono);color:var(--t3)}
-.ep-mov-trans{font-weight:700;color:var(--t1)}
-.ep-mov-actions{display:flex;gap:6px}
-.ep-mov-btn{padding:4px 8px;border:1px solid var(--border2);border-radius:4px;background:var(--surface);font-size:10px;cursor:pointer;color:var(--t1);font-weight:700}
-.ep-mov-btn.del{color:#C62828;border-color:#F8C8C8}
-.ep-mov-btn.edit{color:var(--sap-blue);border-color:#BBDEFB}
-.ep-bal-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:10px;
-  padding:14px;margin-bottom:8px;
-}
-.ep-bal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.ep-bal-name{font-size:15px;font-weight:700;color:var(--t1)}
-.ep-bal-saldo{font-family:var(--font-mono);font-size:22px;font-weight:800;letter-spacing:-.5px}
-.ep-bal-saldo.pos{color:#2E7D32}
-.ep-bal-saldo.neg{color:#C62828}
-.ep-bal-saldo.zero{color:var(--t3)}
-.ep-bal-stats{display:flex;gap:14px;font-size:11px;color:var(--t2)}
-.ep-bal-stats span b{color:var(--t1);font-family:var(--font-mono)}
-.ep-bal-actions{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
-.ep-empty{text-align:center;padding:60px 20px;color:var(--t3)}
-.ep-empty-icon{font-size:48px;margin-bottom:8px}
-.ep-empty-txt{font-size:14px;font-weight:600}
-.ep-empty-sub{font-size:12px;margin-top:4px;color:var(--t4)}
-/* Botón flotante separado para Añadir movimiento */
-.ep-fab{
-  position:fixed;bottom:84px;right:16px;width:52px;height:52px;border-radius:26px;
-  background:var(--sap-blue);color:#fff;font-size:24px;font-weight:700;border:none;
-  box-shadow:0 4px 12px rgba(0,112,242,.4);cursor:pointer;z-index:60;display:none;
-  align-items:center;justify-content:center;
-}
-.ep-screen.active~.ep-fab{display:flex}
-/* Inputs EC/ED highlight (compactos, máximo 3 dígitos) */
-.fg-ec input,.fg-ed input{
-  font-family:var(--font-mono);font-weight:700;text-align:center;font-size:14px;
-  max-width:90px;padding:6px 8px !important;letter-spacing:1px;
-}
-.fg-ec input{border-color:#2E7D32 !important;background:#E8F5E9 !important;color:#1B4B1E}
-.fg-ed input{border-color:var(--sap-blue) !important;background:#E3F2FD !important;color:#004B99}
-/* Hide main content when EP screen is active */
-body.ep-active header,body.ep-active .tabs-wrap,body.ep-active .stats-row,
-body.ep-active .search-row,body.ep-active .filter-panel,body.ep-active .scroll-content,
-body.ep-active .fab{display:none !important}
-
 </style>
 </head>
 <body>
@@ -841,7 +739,6 @@ body.ep-active .fab{display:none !important}
   <div class="nav-item" id="nav-todos" onclick="setTab('todos')"><span>📋</span>Todos</div>
   <div class="nav-item" id="nav-carg" onclick="setTab('cargados')"><span>🚛</span>Cargados</div>
   <div class="nav-item" id="nav-hist" onclick="setTab('historico')"><span>🕐</span>Histórico</div>
-  <div class="nav-item" id="nav-ep" onclick="abrirEuropalets()"><span>🟫</span>Europalets</div>
   <div class="nav-item" onclick="repararApp()" title="Reparar app"><span>🔧</span>Reparar</div>
 </div>
 
@@ -874,9 +771,8 @@ body.ep-active .fab{display:none !important}
         <div class="fg"><label>Nº Pedido</label><input id="f-num" placeholder="1623" inputmode="numeric"></div>
         <div class="fg"><label>Cliente</label><input id="f-grupo" placeholder="Nombre cliente" list="dl-grupos" autocomplete="off"><datalist id="dl-grupos"></datalist></div>
         <div class="fg"><label>Producto</label><input id="f-producto" placeholder="Naranja, Espárrago..." list="dl-productos" autocomplete="off"><datalist id="dl-productos"></datalist></div>
-        <div class="fg"><label>Referencia</label><input id="f-ref" placeholder="26041283" autocomplete="off"></div>
+        <div class="fg"><label>Referencia</label><input id="f-ref" placeholder="26041283" inputmode="numeric"></div>
         <div class="fg"><label>Palets</label><input id="f-uds" placeholder="10" inputmode="numeric"></div>
-        <div class="fg"><label>🟫 Europalets</label><input id="f-europalets" placeholder="0" type="number" min="0" max="999" maxlength="3" inputmode="numeric" oninput="syncEuropaletsToEC()"></div>
         <div class="fg"><label>País</label><input id="f-pais" placeholder="España, Francia..." list="dl-paises" autocomplete="off">
           <datalist id="dl-paises"><option value="España"></option><option value="Francia"></option><option value="Portugal"></option><option value="Alemania"></option><option value="Italia"></option><option value="Bélgica"></option><option value="Países Bajos"></option><option value="Reino Unido"></option><option value="Polonia"></option><option value="Austria"></option><option value="Suecia"></option><option value="Dinamarca"></option></datalist></div>
       </div>
@@ -893,11 +789,6 @@ body.ep-active .fab{display:none !important}
       </div>
       <div class="fgrid full" style="margin-top:10px">
         <div class="fg"><label>🚚 Transportista</label><input id="f-transportista" placeholder="Nombre transportista" list="dl-trans" autocomplete="off"><datalist id="dl-trans"></datalist></div>
-      </div>
-      <div class="fsec">Europalets</div>
-      <div class="fgrid">
-        <div class="fg fg-ec"><label>🟢 EC (Cargados)</label><input id="f-ec" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric"></div>
-        <div class="fg fg-ed"><label>🔵 ED (Devueltos)</label><input id="f-ed" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric"></div>
       </div>
       <div class="fsec">Estado y notas</div>
       <div class="fgrid">
@@ -940,15 +831,6 @@ body.ep-active .fab{display:none !important}
       <div class="fgrid full" style="margin-top:10px">
         <div class="fg"><label>🚚 Transportista</label><input id="c-transportista" placeholder="Nombre transportista" list="dl-trans2" autocomplete="off"><datalist id="dl-trans2"></datalist></div>
       </div>
-      <div class="fsec" style="margin-top:14px">🟫 Europalets (movimiento)</div>
-      <div class="fgrid">
-        <div class="fg fg-ec"><label>EC · Cargados con la mercancía</label><input id="c-ec" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric"></div>
-        <div class="fg fg-ed"><label>ED · Devueltos por el transportista</label><input id="c-ed" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric"></div>
-      </div>
-      <div style="font-size:11px;color:var(--t3);margin:6px 4px 12px 4px;line-height:1.4">
-        💡 <b>EC</b> = palets que salen con la carga · <b>ED</b> = palets que devuelve el transportista al recoger.<br>
-        El movimiento se registra automáticamente en la base de Europalets vinculado a este transportista y cliente.
-      </div>
       <div class="fgrid full" style="margin-top:10px">
         <div class="fg">
           <label>🕐 Hora de salida</label>
@@ -970,130 +852,6 @@ body.ep-active .fab{display:none !important}
   </div>
 </div>
 
-
-<!-- ==== EUROPALETS SCREEN ==== -->
-<div class="ep-screen" id="epScreen">
-  <div class="ep-header">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <span class="ep-h1">🟫 Europalets</span>
-        <small>BASE DE DATOS · MOVIMIENTOS</small>
-      </div>
-      <button class="ep-btn" onclick="cerrarEuropalets()" style="padding:8px 14px">✕ Cerrar</button>
-    </div>
-  </div>
-
-  <div class="ep-summary">
-    <div class="ep-card"><div class="lbl">Total EC</div><div class="num" id="ep-tot-ec">0</div></div>
-    <div class="ep-card"><div class="lbl">Total ED</div><div class="num" id="ep-tot-ed">0</div></div>
-    <div class="ep-card"><div class="lbl">Saldo Global</div><div class="num" id="ep-tot-saldo">0</div></div>
-  </div>
-
-  <div class="ep-tabs">
-    <button class="ep-tab active" data-eptab="movs" onclick="setEpTab('movs')">📋 Movimientos</button>
-    <button class="ep-tab" data-eptab="trans" onclick="setEpTab('trans')">🚚 Por Transportista</button>
-    <button class="ep-tab" data-eptab="cli" onclick="setEpTab('cli')">🏢 Por Cliente</button>
-  </div>
-
-  <div class="ep-search-row">
-    <input id="epSearch" placeholder="Buscar cliente, transportista, ref..." oninput="renderEp()">
-  </div>
-
-  <div class="ep-filters">
-    <select id="epFTrans" onchange="renderEp()"><option value="">Todos los transportistas</option></select>
-    <select id="epFCli" onchange="renderEp()"><option value="">Todos los clientes</option></select>
-    <input type="date" id="epFDesde" onchange="renderEp()" placeholder="Desde">
-    <input type="date" id="epFHasta" onchange="renderEp()" placeholder="Hasta">
-  </div>
-
-  <div class="ep-actions-row">
-    <button class="ep-btn" onclick="limpiarFiltrosEp()">🗑 Limpiar filtros</button>
-    <button class="ep-btn" onclick="imprimirEp()">🖨️ Imprimir</button>
-    <button class="ep-btn" onclick="compartirEp()">📱 Compartir</button>
-    <button class="ep-btn ep-btn-blue" onclick="exportarEpCSV()">📤 CSV</button>
-  </div>
-
-  <div id="epListArea" class="ep-list"></div>
-</div>
-
-<button class="ep-fab" id="epFab" onclick="abrirNuevoMovimiento()" title="Añadir movimiento manual">＋</button>
-
-<!-- MODAL NUEVO/EDITAR MOVIMIENTO MANUAL -->
-<div class="modal-bg" id="mMov" onclick="if(event.target===this)closeMovModal()">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-header">
-      <div class="modal-title" id="mMovTitle">🟫 Nuevo movimiento</div>
-      <div class="modal-subtitle">Movimiento de europalets manual (devolución, ajuste, liquidación)</div>
-    </div>
-    <div class="modal-scroll">
-      <div class="fsec">Datos del movimiento</div>
-      <div class="fgrid">
-        <div class="fg"><label>Fecha</label><input type="date" id="m-fecha"></div>
-        <div class="fg"><label>Tipo</label>
-          <select id="m-tipo">
-            <option value="movimiento">📋 Movimiento normal</option>
-            <option value="liquidacion">💰 Liquidación / Ajuste</option>
-            <option value="devolucion">↩️ Devolución directa</option>
-          </select>
-        </div>
-      </div>
-      <div class="fgrid full" style="margin-top:10px">
-        <div class="fg"><label>🏢 Cliente</label><input id="m-cliente" list="dl-grupos-mov" autocomplete="off"><datalist id="dl-grupos-mov"></datalist></div>
-      </div>
-      <div class="fgrid full" style="margin-top:10px">
-        <div class="fg"><label>🚚 Transportista</label><input id="m-transportista" list="dl-trans-mov" autocomplete="off"><datalist id="dl-trans-mov"></datalist></div>
-      </div>
-      <div class="fgrid full" style="margin-top:10px">
-        <div class="fg"><label>Referencia</label><input id="m-ref" placeholder="Opcional"></div>
-      </div>
-      <div class="fgrid">
-        <div class="fg fg-ec"><label>🟢 EC (Cargados)</label><input id="m-ec" type="number" min="0" max="999" maxlength="3" placeholder="0"></div>
-        <div class="fg fg-ed"><label>🔵 ED (Devueltos)</label><input id="m-ed" type="number" min="0" max="999" maxlength="3" placeholder="0"></div>
-      </div>
-      <div class="fgrid full" style="margin-top:10px">
-        <div class="fg"><label>Notas</label><textarea id="m-notas" placeholder="Observaciones..."></textarea></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="mbtn mbtn-cancel" onclick="closeMovModal()">Cancelar</button>
-      <button class="mbtn mbtn-save" onclick="saveMovimiento()">💾 Guardar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL SALDO INICIAL POR TRANSPORTISTA -->
-<div class="modal-bg" id="mSaldoIni" onclick="if(event.target===this)closeSaldoIniModal()">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-header">
-      <div class="modal-title">📌 Fijar saldo inicial</div>
-      <div class="modal-subtitle">Establece el saldo a una fecha. A partir de ahí se acumulará con los nuevos movimientos.</div>
-    </div>
-    <div class="modal-scroll">
-      <div class="fsec">Datos</div>
-      <div class="fgrid full">
-        <div class="fg"><label>🚚 Transportista</label><input id="si-transp" placeholder="Ej. DHL" list="dl-trans-si" autocomplete="off"><datalist id="dl-trans-si"></datalist></div>
-      </div>
-      <div class="fgrid">
-        <div class="fg"><label>📅 Fecha del saldo</label><input id="si-fecha" type="date"></div>
-        <div class="fg"><label>💰 Saldo (puede ser negativo)</label><input id="si-saldo" type="number" placeholder="0" inputmode="numeric"></div>
-      </div>
-      <div class="fgrid full" style="margin-top:10px">
-        <div class="fg"><label>Notas</label><textarea id="si-notas" placeholder="Opcional: motivo del saldo inicial..."></textarea></div>
-      </div>
-      <div style="font-size:11px;color:var(--t3);margin:10px 4px;padding:8px;background:#FFF8DC;border-radius:6px;border-left:3px solid #FFCC00;line-height:1.5">
-        💡 Un saldo positivo significa que <b>nosotros le debemos</b> esos palets. Negativo = <b>el transportista nos los debe</b>.<br>
-        Solo puede haber un saldo inicial por transportista; se sustituirá si ya existe.
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="mbtn mbtn-cancel" onclick="closeSaldoIniModal()">Cancelar</button>
-      <button class="mbtn mbtn-save" onclick="guardarSaldoInicial()">📌 Fijar saldo</button>
-    </div>
-  </div>
-</div>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
@@ -1108,12 +866,8 @@ firebase.initializeApp({
 });
 const db  = firebase.firestore();
 const col = db.collection('pedidos');
-const colMov = db.collection('movimientos_palets');
 
 let pedidos = [];
-let movimientos = [];
-let epActiveTab = 'movs';
-let editMovId = null;
 let editId = null, cargarId = null;
 let activeTab = 'pendientes', activeView = 'cards';
 let confirmCallback = null;
@@ -1262,15 +1016,13 @@ function updateStats() {
   const term=pedidos.filter(p=>p.status==='terminado').length;
   const carg=pedidos.filter(p=>p.status==='cargado' && (!p.fecha || p.fecha >= hoy)).length;
   const hist=pedidos.filter(p=>p.status==='cargado' && p.fecha && p.fecha < hoy).length;
-  // Total = todos los pedidos que NO están cargados (pendientes + terminados + revisión)
-  const totalActivos = pedidos.filter(p=>p.status!=='cargado').length;
-  document.getElementById('s-total').textContent=totalActivos;
+  document.getElementById('s-total').textContent=pedidos.length;
   document.getElementById('s-pend').textContent=pend;
   document.getElementById('s-term').textContent=term;
   document.getElementById('s-carg').textContent=carg;
   document.getElementById('b-pend').textContent=pend;
   document.getElementById('b-term').textContent=term;
-  document.getElementById('b-todos').textContent=totalActivos;
+  document.getElementById('b-todos').textContent=pedidos.length;
   document.getElementById('b-carg').textContent=carg;
   document.getElementById('b-hist').textContent=hist;
 }
@@ -1477,9 +1229,9 @@ function openPedidoModal(idOrNull) {
   const p = idOrNull ? pedidos.find(x=>String(x.id)===String(idOrNull)) : null;
   editId = p ? p.id : null;
   document.getElementById('mPedidoTitle').textContent = p ? '✏️ Editar pedido' : '📦 Nuevo pedido';
-  ['num','grupo','producto','ref','uds','pais','mat1','mat2','hora','hora_salida','muelle','transportista','notas','ec','ed','europalets'].forEach(k => {
+  ['num','grupo','producto','ref','uds','pais','mat1','mat2','hora','hora_salida','muelle','transportista','notas'].forEach(k => {
     const fid = k==='hora_salida'?'f-hora-salida':'f-'+k;
-    const el = document.getElementById(fid); if(el) el.value = p?.[k]||'';
+    document.getElementById(fid).value = p?.[k]||'';
   });
   document.getElementById('f-status').value = p?.status||'pendiente';
   document.getElementById('f-fecha').value  = p?.fecha||new Date().toISOString().slice(0,10);
@@ -1495,7 +1247,6 @@ async function savePedido() {
     id, createdAt: editId ? (pedidos.find(x=>x.id===editId)?.createdAt || Date.now()) : Date.now(),
     num:get('f-num'), grupo:get('f-grupo'), producto:get('f-producto'), ref:get('f-ref'),
     uds:get('f-uds'), pais:get('f-pais'),
-    europalets: parseInt(get('f-europalets'))||0,
     mat1:get('f-mat1').toUpperCase(), mat2:get('f-mat2').toUpperCase(),
     hora:document.getElementById('f-hora').value,
     hora_salida:document.getElementById('f-hora-salida').value,
@@ -1503,19 +1254,16 @@ async function savePedido() {
     status:document.getElementById('f-status').value,
     fecha:document.getElementById('f-fecha').value,
     notas:get('f-notas'),
-    ec: parseInt(get('f-ec'))||0,
-    ed: parseInt(get('f-ed'))||0,
   };
   if(!p.grupo){ toast('⚠️ Indica el cliente'); return; }
   closePedidoModal();
   await fbSave(p);
-  await syncMovimientoDePedido(p);
   toast(editId ? '✏️ Pedido actualizado' : '✅ Pedido creado');
 }
 
 function limpiarPedidoModal() {
   confirm2('🗑','¿Limpiar formulario?','Se borrarán todos los campos','Limpiar','',()=>{
-    ['num','grupo','producto','ref','uds','pais','mat1','mat2','muelle','transportista','notas','ec','ed','europalets'].forEach(k=>{ const el=document.getElementById('f-'+k); if(el) el.value=''; });
+    ['num','grupo','producto','ref','uds','pais','mat1','mat2','muelle','transportista','notas'].forEach(k=>{ document.getElementById('f-'+k).value=''; });
     document.getElementById('f-hora').value='';
     document.getElementById('f-hora-salida').value='';
     document.getElementById('f-status').value='pendiente';
@@ -1532,9 +1280,6 @@ function openCargarModal(id) {
   document.getElementById('c-transportista').value=p.transportista||'';
   document.getElementById('c-notas').value='';
   document.getElementById('c-hora-salida').value=new Date().toTimeString().slice(0,5);
-  // EC se autorrellena con EUROPALETS del pedido si no tiene EC propio
-  document.getElementById('c-ec').value = p.ec || p.europalets || '';
-  document.getElementById('c-ed').value = p.ed||'';
   document.getElementById('mCargar').classList.add('open');
   setTimeout(()=>{ document.querySelector('#mCargar .modal-scroll').scrollTop=0; },50);
 }
@@ -1542,24 +1287,15 @@ function closeCargarModal() { document.getElementById('mCargar').classList.remov
 
 async function confirmarCarga() {
   const p=pedidos.find(x=>String(x.id)===String(cargarId)); if(!p) return;
-  const ec = parseInt(document.getElementById('c-ec').value)||0;
-  const ed = parseInt(document.getElementById('c-ed').value)||0;
-  const updated={...p, status:'cargado',
-    hora:document.getElementById('c-hora').value,
-    hora_salida:document.getElementById('c-hora-salida').value,
-    muelle:document.getElementById('c-muelle').value.trim(),
-    transportista:document.getElementById('c-transportista').value.trim(),
-    ec: ec, ed: ed
-  };
+  const updated={...p, status:'cargado', hora:document.getElementById('c-hora').value, hora_salida:document.getElementById('c-hora-salida').value, muelle:document.getElementById('c-muelle').value.trim(), transportista:document.getElementById('c-transportista').value.trim()};
   const n2=document.getElementById('c-notas').value.trim();
   if(n2) updated.notas=p.notas?p.notas+' | '+n2:n2;
   closeCargarModal();
   await fbSave(updated);
-  await syncMovimientoDePedido(updated);
-  toast(`🟢 Carga confirmada${ec||ed?` · EC:${ec} ED:${ed}`:''}`);
+  toast('🟢 Carga confirmada');
 }
 
-function limpiarCargarModal() { ['c-hora','c-hora-salida','c-muelle','c-transportista','c-notas','c-ec','c-ed'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';}); }
+function limpiarCargarModal() { document.getElementById('c-hora').value=''; document.getElementById('c-hora-salida').value=''; document.getElementById('c-muelle').value=''; document.getElementById('c-transportista').value=''; document.getElementById('c-notas').value=''; }
 
 function reabrir(id) {
   confirm2('↩️','¿Reabrir pedido?','Volverá al estado Confección','Reabrir','blue',async()=>{
@@ -1573,7 +1309,6 @@ function delPedido(id) {
   const p=pedidos.find(x=>String(x.id)===String(id));
   confirm2('🗑','¿Eliminar pedido?',(p?.grupo||'')+(p?.num?' #'+p.num:''),'Eliminar','',async()=>{
     await fbDelete(id);
-    await deleteMovimientoDePedido(id);
     toast('🗑 Pedido eliminado');
   });
 }
@@ -1773,732 +1508,6 @@ window.limpiarPedidoModal=limpiarPedidoModal; window.openCargarModal=openCargarM
 window.closeCargarModal=closeCargarModal; window.confirmarCarga=confirmarCarga;
 window.limpiarCargarModal=limpiarCargarModal; window.reabrir=reabrir; window.delPedido=delPedido;
 
-// ============== EUROPALETS ==============
-function abrirEuropalets() {
-  document.body.classList.add('ep-active');
-  document.getElementById('epScreen').classList.add('active');
-  document.querySelectorAll('.bottom-nav .nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('nav-ep').classList.add('active');
-  // Cargar movimientos en tiempo real (lazy)
-  if(!window._epSubscribed){
-    window._epSubscribed = true;
-    colMov.onSnapshot(snap=>{
-      movimientos = snap.docs.map(d=>({...d.data(),id:d.id}));
-      movimientos.sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||'') || (b.createdAt||0)-(a.createdAt||0));
-      llenarSelectoresEp();
-      renderEp();
-    });
-  } else {
-    renderEp();
-  }
-}
-
-function cerrarEuropalets() {
-  document.body.classList.remove('ep-active');
-  document.getElementById('epScreen').classList.remove('active');
-  document.getElementById('nav-ep').classList.remove('active');
-  setTab(activeTab);
-}
-
-function setEpTab(t){
-  epActiveTab = t;
-  document.querySelectorAll('.ep-tab').forEach(el=>el.classList.toggle('active', el.dataset.eptab===t));
-  renderEp();
-}
-
-function llenarSelectoresEp(){
-  const setT = new Set(), setC = new Set();
-  movimientos.forEach(m=>{ if(m.transportista)setT.add(m.transportista); if(m.cliente)setC.add(m.cliente); });
-  // Tambien clientes y transportistas vistos en pedidos
-  pedidos.forEach(p=>{ if(p.transportista)setT.add(p.transportista); if(p.grupo)setC.add(p.grupo); });
-  const selT = document.getElementById('epFTrans');
-  const selC = document.getElementById('epFCli');
-  const valT = selT.value, valC = selC.value;
-  selT.innerHTML = '<option value="">Todos los transportistas</option>' + [...setT].sort().map(t=>`<option ${valT===t?'selected':''}>${t}</option>`).join('');
-  selC.innerHTML = '<option value="">Todos los clientes</option>' + [...setC].sort().map(c=>`<option ${valC===c?'selected':''}>${c}</option>`).join('');
-  // datalist en modal
-  const dlT = document.getElementById('dl-trans-mov');
-  const dlC = document.getElementById('dl-grupos-mov');
-  if(dlT) dlT.innerHTML = [...setT].sort().map(t=>`<option value="${t}">`).join('');
-  if(dlC) dlC.innerHTML = [...setC].sort().map(c=>`<option value="${c}">`).join('');
-  const dlSi = document.getElementById('dl-trans-si');
-  if(dlSi) dlSi.innerHTML = [...setT].sort().map(t=>`<option value="${t}">`).join('');
-}
-
-function limpiarFiltrosEp(){
-  document.getElementById('epSearch').value='';
-  document.getElementById('epFTrans').value='';
-  document.getElementById('epFCli').value='';
-  document.getElementById('epFDesde').value='';
-  document.getElementById('epFHasta').value='';
-  renderEp();
-}
-
-function filtrarMovimientos(){
-  const q = (document.getElementById('epSearch').value||'').toLowerCase().trim();
-  const ft = document.getElementById('epFTrans').value;
-  const fc = document.getElementById('epFCli').value;
-  const fd = document.getElementById('epFDesde').value;
-  const fh = document.getElementById('epFHasta').value;
-  return movimientos.filter(m=>{
-    if(ft && m.transportista!==ft) return false;
-    if(fc && m.cliente!==fc) return false;
-    if(fd && (m.fecha||'') < fd) return false;
-    if(fh && (m.fecha||'') > fh) return false;
-    if(q){
-      const txt = ((m.cliente||'')+' '+(m.transportista||'')+' '+(m.ref||'')+' '+(m.notas||'')).toLowerCase();
-      if(!txt.includes(q)) return false;
-    }
-    return true;
-  });
-}
-
-function renderEp(){
-  const data = filtrarMovimientos();
-  // Resumen global · suma EC/ED + saldos iniciales más recientes por transportista
-  const totEc = data.reduce((a,m)=>m.tipo==='saldo_inicial'?a:a+(parseInt(m.ec)||0),0);
-  const totEd = data.reduce((a,m)=>m.tipo==='saldo_inicial'?a:a+(parseInt(m.ed)||0),0);
-  // Sumar saldos iniciales (uno por transportista, el más reciente)
-  const sini = {};
-  movimientos.filter(m=>m.tipo==='saldo_inicial').forEach(s=>{
-    if(!sini[s.transportista] || (s.fecha||'')>(sini[s.transportista].fecha||'')) sini[s.transportista]=s;
-  });
-  const totSaldoIni = Object.values(sini).reduce((a,s)=>a+(parseInt(s.saldo_inicial)||0),0);
-  const saldo = totEc - totEd + totSaldoIni;
-  document.getElementById('ep-tot-ec').textContent = totEc;
-  document.getElementById('ep-tot-ed').textContent = totEd;
-  const elS = document.getElementById('ep-tot-saldo');
-  elS.textContent = (saldo>0?'+':'')+saldo;
-  elS.className = 'num ' + (saldo>0?'pos':saldo<0?'neg':'');
-
-  const area = document.getElementById('epListArea');
-  if(data.length===0){
-    area.innerHTML = `<div class="ep-empty"><div class="ep-empty-icon">🟫</div>
-      <div class="ep-empty-txt">Sin movimientos</div>
-      <div class="ep-empty-sub">Añade EC/ED al confirmar una carga, o pulsa el botón ＋ para añadir uno manual</div></div>`;
-    return;
-  }
-  if(epActiveTab==='movs'){
-    renderEpMovs(data);
-  } else if(epActiveTab==='trans'){
-    renderEpAgrupado(data, 'transportista', '🚚');
-  } else {
-    renderEpAgrupado(data, 'cliente', '🏢');
-  }
-}
-
-function renderEpMovs(data){
-  // Saldos iniciales por transportista (más reciente)
-  const saldosIni = {};
-  movimientos.filter(m=>m.tipo==='saldo_inicial').forEach(s=>{
-    if(!saldosIni[s.transportista] || (s.fecha||'') > (saldosIni[s.transportista].fecha||'')){
-      saldosIni[s.transportista] = s;
-    }
-  });
-  // Inicializar acumulado con saldo inicial
-  const saldosTrans = {};
-  Object.keys(saldosIni).forEach(t=>{ saldosTrans[t] = parseInt(saldosIni[t].saldo_inicial)||0; });
-
-  const asc = [...data].sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||'') || (a.createdAt||0)-(b.createdAt||0));
-  asc.forEach(m=>{
-    const t = m.transportista || '—';
-    if(m.tipo==='saldo_inicial'){
-      saldosTrans[t] = parseInt(m.saldo_inicial)||0;
-      m._saldoTransAcum = saldosTrans[t];
-    } else {
-      const si = saldosIni[t];
-      // Si hay saldo inicial y el mov es anterior, no acumular para este transportista
-      if(si && (m.fecha||'') < si.fecha){
-        m._saldoTransAcum = null; // no aplica
-      } else {
-        saldosTrans[t] = (saldosTrans[t]||0) + (parseInt(m.ec)||0) - (parseInt(m.ed)||0);
-        m._saldoTransAcum = saldosTrans[t];
-      }
-    }
-  });
-  let html='';
-  data.forEach(m=>{
-    if(m.tipo==='saldo_inicial'){
-      const v = parseInt(m.saldo_inicial)||0;
-      html += `<div class="ep-mov-card" style="border-left:4px solid #0070F2;background:#F5F9FF">
-        <div class="ep-mov-top">
-          <div>
-            <div class="ep-mov-fecha" style="color:#0070F2">${m.fecha||'—'} · 📌 SALDO INICIAL</div>
-            <div class="ep-mov-cliente" style="color:#0070F2">${m.transportista||'—'}</div>
-          </div>
-          <div class="ep-bal-saldo ${v>0?'pos':v<0?'neg':'zero'}" style="font-size:24px">${v>0?'+':''}${v}</div>
-        </div>
-        ${m.notas?`<div style="margin-top:8px;padding:6px 8px;background:#fff;border-radius:4px;font-size:11px;color:var(--t2);font-style:italic">📝 ${m.notas}</div>`:''}
-        <div class="ep-mov-bottom">
-          <span style="font-size:10px;color:#0070F2;font-weight:700">A partir de esta fecha el saldo acumula desde aquí</span>
-          <div class="ep-mov-actions">
-            <button class="ep-mov-btn edit" onclick="abrirSaldoInicial('${(m.transportista||'').replace(/'/g,"\'")}')">✏️</button>
-            <button class="ep-mov-btn del" onclick="eliminarMovimiento('${m.id}')">🗑</button>
-          </div>
-        </div>
-      </div>`;
-      return;
-    }
-    const ec = parseInt(m.ec)||0, ed = parseInt(m.ed)||0;
-    const saldoMov = ec - ed;
-    const saldoCls = saldoMov>0?'pos':saldoMov<0?'neg':'';
-    const tipoLbl = m.tipo==='liquidacion'?'💰 Liquidación':m.tipo==='devolucion'?'↩️ Devolución':'📦 Movimiento';
-    const acum = m._saldoTransAcum;
-    html += `<div class="ep-mov-card">
-      <div class="ep-mov-top">
-        <div>
-          <div class="ep-mov-fecha">${m.fecha||'—'} · ${tipoLbl}</div>
-          <div class="ep-mov-cliente">${m.cliente||'—'}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="ep-mov-trans">${m.transportista||'—'}</div>
-          <div class="ep-mov-ref">${m.ref?'Ref. '+m.ref:''}</div>
-        </div>
-      </div>
-      <div class="ep-mov-grid">
-        <div class="ep-mov-item ec"><div class="l">EC</div><div class="v">${ec}</div></div>
-        <div class="ep-mov-item ed"><div class="l">ED</div><div class="v">${ed}</div></div>
-        <div class="ep-mov-item sd"><div class="l">Saldo mov.</div><div class="v ${saldoCls}">${saldoMov>0?'+':''}${saldoMov}</div></div>
-        <div class="ep-mov-item sd"><div class="l">Acum. transp.</div><div class="v ${acum===null?'':acum>0?'pos':acum<0?'neg':''}">${acum===null?'—':(acum>0?'+':'')+(acum||0)}</div></div>
-      </div>
-      ${m.notas?`<div style="margin-top:8px;padding:6px 8px;background:var(--surface2);border-radius:4px;font-size:11px;color:var(--t2);font-style:italic">📝 ${m.notas}</div>`:''}
-      <div class="ep-mov-bottom">
-        <span style="font-size:10px">${m.pedidoId?'🔗 Vinculado a pedido':'✋ Manual'}</span>
-        <div class="ep-mov-actions">
-          ${!m.pedidoId?`<button class="ep-mov-btn edit" onclick="editarMovimiento('${m.id}')">✏️</button>`:''}
-          <button class="ep-mov-btn del" onclick="eliminarMovimiento('${m.id}')">🗑</button>
-        </div>
-      </div>
-    </div>`;
-  });
-  document.getElementById('epListArea').innerHTML = html;
-}
-
-function renderEpAgrupado(data, key, icon){
-  const grupos = {};
-  // Saldos iniciales (solo cuentan para vista por transportista)
-  const saldosIni = {};
-  if(key==='transportista'){
-    movimientos.filter(m=>m.tipo==='saldo_inicial').forEach(s=>{
-      if(!saldosIni[s.transportista] || (s.fecha||'') > (saldosIni[s.transportista].fecha||'')){
-        saldosIni[s.transportista] = s;
-      }
-    });
-  }
-  data.forEach(m=>{
-    if(m.tipo==='saldo_inicial') return;
-    const k = m[key] || '—';
-    if(!grupos[k]) grupos[k] = {nombre:k, ec:0, ed:0, count:0, last:'', desdeFecha:''};
-    const si = saldosIni[k];
-    if(si && (m.fecha||'') < si.fecha) return;
-    grupos[k].ec += parseInt(m.ec)||0;
-    grupos[k].ed += parseInt(m.ed)||0;
-    grupos[k].count++;
-    if((m.fecha||'') > grupos[k].last) grupos[k].last = m.fecha;
-  });
-  if(key==='transportista'){
-    Object.keys(saldosIni).forEach(k=>{
-      if(!grupos[k]) grupos[k] = {nombre:k, ec:0, ed:0, count:0, last:saldosIni[k].fecha, desdeFecha:saldosIni[k].fecha};
-      else grupos[k].desdeFecha = saldosIni[k].fecha;
-    });
-  }
-  const arr = Object.values(grupos).map(g=>{
-    const si = saldosIni[g.nombre];
-    const saldoIni = si ? (parseInt(si.saldo_inicial)||0) : 0;
-    return {...g, saldoIni, saldo: saldoIni + g.ec - g.ed};
-  });
-  arr.sort((a,b)=> Math.abs(b.saldo) - Math.abs(a.saldo));
-  let html='';
-  arr.forEach(g=>{
-    const cls = g.saldo>0?'pos':g.saldo<0?'neg':'zero';
-    const interp = g.saldo>0
-      ? `Le debemos ${g.saldo} palet${g.saldo===1?'':'s'}`
-      : g.saldo<0
-        ? `Nos debe ${Math.abs(g.saldo)} palet${Math.abs(g.saldo)===1?'':'s'}`
-        : 'Saldo cuadrado';
-    const hasSi = g.saldoIni!==0 || g.desdeFecha;
-    html += `<div class="ep-bal-card">
-      <div class="ep-bal-top">
-        <div>
-          <div class="ep-bal-name">${icon} ${g.nombre}</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">${interp} · Último mov.: ${g.last||'—'}</div>
-          ${hasSi?`<div style="font-size:10px;color:#0070F2;margin-top:3px;font-weight:600">📌 Saldo inicial: ${g.saldoIni>0?'+':''}${g.saldoIni} desde ${g.desdeFecha}</div>`:''}
-        </div>
-        <div class="ep-bal-saldo ${cls}">${g.saldo>0?'+':''}${g.saldo}</div>
-      </div>
-      <div class="ep-bal-stats">
-        <span>EC: <b>${g.ec}</b></span>
-        <span>ED: <b>${g.ed}</b></span>
-        <span>Movs: <b>${g.count}</b></span>
-      </div>
-      ${key==='transportista' ? `
-      <div class="ep-bal-actions">
-        <button class="ep-btn" onclick="filtrarPor('${key}','${g.nombre.replace(/'/g,"\'")}')">Ver movs</button>
-        <button class="ep-btn" style="background:#E3F2FD;color:#0070F2;border-color:#0070F2" onclick="abrirSaldoInicial('${g.nombre.replace(/'/g,"\'")}')">📌 ${hasSi?'Editar':'Fijar'} saldo</button>
-        ${g.saldo!==0?`<button class="ep-btn ep-btn-primary" onclick="liquidarSaldo('${g.nombre.replace(/'/g,"\'")}',${g.saldo})">💰 Liquidar</button>`:''}
-      </div>`:''}
-    </div>`;
-  });
-  if(html==='') html = '<div class="ep-empty"><div class="ep-empty-icon">🔍</div><div class="ep-empty-txt">Sin resultados</div></div>';
-  document.getElementById('epListArea').innerHTML = html;
-}
-
-function filtrarPor(key, value){
-  if(key==='transportista'){ document.getElementById('epFTrans').value = value; }
-  else { document.getElementById('epFCli').value = value; }
-  setEpTab('movs');
-}
-
-function liquidarSaldo(transportista, saldo){
-  confirm2('💰','¿Liquidar saldo?',
-    `Se creará un movimiento de ajuste a ${transportista} para dejar el saldo a 0 (saldo actual: ${saldo>0?'+':''}${saldo}).`,
-    'Liquidar','blue', async ()=>{
-      const mov = {
-        id: 'mov_'+Date.now()+'_'+Math.floor(Math.random()*1000),
-        fecha: new Date().toISOString().slice(0,10),
-        tipo: 'liquidacion',
-        cliente: '— LIQUIDACIÓN —',
-        transportista: transportista,
-        ref: 'LIQ-'+Date.now(),
-        ec: saldo<0 ? Math.abs(saldo) : 0,
-        ed: saldo>0 ? saldo : 0,
-        notas: `Liquidación automática para cuadrar saldo a 0`,
-        manual: true,
-        createdAt: Date.now()
-      };
-      try{
-        await colMov.doc(mov.id).set(mov);
-        toast('💰 Saldo liquidado');
-      }catch(e){ console.error(e); toast('❌ Error'); }
-    });
-}
-
-function abrirNuevoMovimiento(){
-  editMovId = null;
-  document.getElementById('mMovTitle').textContent = '🟫 Nuevo movimiento';
-  document.getElementById('m-fecha').value = new Date().toISOString().slice(0,10);
-  document.getElementById('m-tipo').value = 'movimiento';
-  ['cliente','transportista','ref','ec','ed','notas'].forEach(f=>{ document.getElementById('m-'+f).value=''; });
-  document.getElementById('mMov').classList.add('open');
-}
-
-function editarMovimiento(id){
-  const m = movimientos.find(x=>x.id===id);
-  if(!m) return;
-  if(m.pedidoId){ toast('⚠️ Este mov. está vinculado a un pedido. Edítalo desde el pedido.'); return; }
-  editMovId = id;
-  document.getElementById('mMovTitle').textContent = '✏️ Editar movimiento';
-  document.getElementById('m-fecha').value = m.fecha||'';
-  document.getElementById('m-tipo').value = m.tipo||'movimiento';
-  document.getElementById('m-cliente').value = m.cliente||'';
-  document.getElementById('m-transportista').value = m.transportista||'';
-  document.getElementById('m-ref').value = m.ref||'';
-  document.getElementById('m-ec').value = m.ec||'';
-  document.getElementById('m-ed').value = m.ed||'';
-  document.getElementById('m-notas').value = m.notas||'';
-  document.getElementById('mMov').classList.add('open');
-}
-
-function closeMovModal(){ document.getElementById('mMov').classList.remove('open'); editMovId=null; }
-
-async function saveMovimiento(){
-  const get = id=>document.getElementById(id).value.trim();
-  const ec = parseInt(get('m-ec'))||0;
-  const ed = parseInt(get('m-ed'))||0;
-  if(ec===0 && ed===0){ toast('⚠️ Indica EC o ED'); return; }
-  if(!get('m-transportista')){ toast('⚠️ Indica transportista'); return; }
-  const id = editMovId || ('mov_'+Date.now()+'_'+Math.floor(Math.random()*1000));
-  const mov = {
-    id,
-    fecha: get('m-fecha') || new Date().toISOString().slice(0,10),
-    tipo: get('m-tipo')||'movimiento',
-    cliente: get('m-cliente'),
-    transportista: get('m-transportista'),
-    ref: get('m-ref'),
-    ec, ed,
-    notas: get('m-notas'),
-    manual: true,
-    createdAt: editMovId ? (movimientos.find(x=>x.id===editMovId)?.createdAt || Date.now()) : Date.now()
-  };
-  try{
-    await colMov.doc(id).set(mov);
-    closeMovModal();
-    toast(editMovId?'✏️ Movimiento actualizado':'✅ Movimiento creado');
-  }catch(e){ console.error(e); toast('❌ Error'); }
-}
-
-function eliminarMovimiento(id){
-  const m = movimientos.find(x=>x.id===id);
-  confirm2('🗑','¿Eliminar movimiento?',`${m?.cliente||''} · ${m?.transportista||''} · EC ${m?.ec||0} / ED ${m?.ed||0}`,'Eliminar','',async()=>{
-    try{ await colMov.doc(id).delete(); toast('🗑 Eliminado'); }
-    catch(e){ console.error(e); toast('❌ Error'); }
-  });
-}
-
-function exportarEpCSV(){
-  const data = filtrarMovimientos();
-  const headers = ['Fecha','Tipo','Cliente','Referencia','Transportista','EC','ED','Saldo','Notas','Pedido_ID'];
-  const rows = data.map(m=>{
-    const ec=parseInt(m.ec)||0, ed=parseInt(m.ed)||0;
-    return [m.fecha, m.tipo||'movimiento', m.cliente, m.ref, m.transportista, ec, ed, ec-ed, m.notas, m.pedidoId||'']
-      .map(v=>`"${(String(v||'')).replace(/"/g,'""')}"`).join(',');
-  });
-  const csv=[headers.join(','),...rows].join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='europalets_'+new Date().toISOString().slice(0,10)+'.csv'; a.click(); URL.revokeObjectURL(url);
-  toast('📤 CSV de Europalets exportado');
-}
-
-// Hook al guardar/confirmar carga: crear o actualizar movimiento si tiene EC o ED
-async function syncMovimientoDePedido(p){
-  const ec = parseInt(p.ec)||0;
-  const ed = parseInt(p.ed)||0;
-  const movId = 'pedido_'+p.id;
-  // Si no hay EC ni ED, eliminar movimiento si existía
-  if(ec===0 && ed===0){
-    try{ await colMov.doc(movId).delete(); }catch(_){}
-    return;
-  }
-  const mov = {
-    id: movId,
-    pedidoId: p.id,
-    fecha: p.fecha || new Date().toISOString().slice(0,10),
-    tipo: 'movimiento',
-    cliente: p.grupo||'',
-    transportista: p.transportista||'',
-    ref: p.ref||p.num||'',
-    ec, ed,
-    notas: p.notas||'',
-    manual: false,
-    createdAt: p.createdAt || Date.now(),
-    updatedAt: Date.now()
-  };
-  try{ await colMov.doc(movId).set(mov); }catch(e){ console.error(e); }
-}
-
-// Si se elimina un pedido, eliminar su movimiento
-async function deleteMovimientoDePedido(pedidoId){
-  try{ await colMov.doc('pedido_'+pedidoId).delete(); }catch(_){}
-}
-
-// Exponer al window
-window.abrirEuropalets=abrirEuropalets;
-window.cerrarEuropalets=cerrarEuropalets;
-window.setEpTab=setEpTab;
-window.renderEp=renderEp;
-window.limpiarFiltrosEp=limpiarFiltrosEp;
-window.exportarEpCSV=exportarEpCSV;
-window.imprimirEp=imprimirEp;
-window.compartirEp=compartirEp;
-window.abrirNuevoMovimiento=abrirNuevoMovimiento;
-window.editarMovimiento=editarMovimiento;
-window.eliminarMovimiento=eliminarMovimiento;
-window.closeMovModal=closeMovModal;
-window.saveMovimiento=saveMovimiento;
-window.liquidarSaldo=liquidarSaldo;
-window.filtrarPor=filtrarPor;
-window.abrirSaldoInicial=abrirSaldoInicial;
-window.closeSaldoIniModal=closeSaldoIniModal;
-window.guardarSaldoInicial=guardarSaldoInicial;
-
-// Auto-sincroniza el campo EUROPALETS al campo EC (Cargados) en el modal de Pedido
-function syncEuropaletsToEC(){
-  const ep = document.getElementById('f-europalets').value;
-  if(ep && ep.trim() !== ''){
-    document.getElementById('f-ec').value = ep;
-  }
-}
-window.syncEuropaletsToEC = syncEuropaletsToEC;
-
-// ============== SALDO INICIAL POR TRANSPORTISTA ==============
-function abrirSaldoInicial(transportista){
-  // Buscar saldo inicial existente
-  const existente = movimientos.filter(m=>m.tipo==='saldo_inicial' && m.transportista===transportista)
-    .sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''))[0];
-  document.getElementById('si-transp').value = transportista || '';
-  document.getElementById('si-fecha').value = existente?.fecha || new Date().toISOString().slice(0,10);
-  document.getElementById('si-saldo').value = existente?.saldo_inicial!==undefined ? existente.saldo_inicial : '';
-  document.getElementById('si-notas').value = existente?.notas || '';
-  document.getElementById('mSaldoIni').classList.add('open');
-}
-
-function closeSaldoIniModal(){
-  document.getElementById('mSaldoIni').classList.remove('open');
-}
-
-async function guardarSaldoInicial(){
-  const transp = document.getElementById('si-transp').value.trim();
-  const fecha = document.getElementById('si-fecha').value;
-  const saldoStr = document.getElementById('si-saldo').value.trim();
-  const notas = document.getElementById('si-notas').value.trim();
-  if(!transp){ toast('⚠️ Indica transportista'); return; }
-  if(!fecha){ toast('⚠️ Indica fecha'); return; }
-  if(saldoStr===''){ toast('⚠️ Indica saldo (puede ser 0)'); return; }
-  const saldo = parseInt(saldoStr)||0;
-  // ID determinístico: solo uno por transportista (al editar lo sobrescribe)
-  const id = 'saldoini_' + transp.replace(/[^a-zA-Z0-9]/g,'_');
-  const mov = {
-    id,
-    tipo: 'saldo_inicial',
-    transportista: transp,
-    fecha,
-    cliente: '— SALDO INICIAL —',
-    ref: '',
-    ec: 0, ed: 0,
-    saldo_inicial: saldo,
-    notas,
-    manual: true,
-    createdAt: Date.now()
-  };
-  try{
-    await colMov.doc(id).set(mov);
-    closeSaldoIniModal();
-    toast('📌 Saldo inicial fijado');
-  }catch(e){ console.error(e); toast('❌ Error'); }
-}
-
-// ============== EUROPALETS · IMPRIMIR / COMPARTIR ==============
-function _epTabLabel(){
-  return {movs:'Movimientos', trans:'Por Transportista', cli:'Por Cliente'}[epActiveTab] || 'Movimientos';
-}
-
-function _buildEpTable(data){
-  // Construye tabla HTML según la pestaña activa
-  if(epActiveTab==='movs'){
-    // Pre-calcular saldo acumulado por transportista (orden cronológico)
-    const saldosTrans = {};
-    const asc = [...data].sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||'') || (a.createdAt||0)-(b.createdAt||0));
-    asc.forEach(m=>{
-      const t = m.transportista || '—';
-      saldosTrans[t] = (saldosTrans[t]||0) + (parseInt(m.ec)||0) - (parseInt(m.ed)||0);
-      m._saldoAcum = saldosTrans[t];
-    });
-    let totEc=0, totEd=0;
-    let rows = data.map(m=>{
-      const ec = parseInt(m.ec)||0, ed = parseInt(m.ed)||0;
-      totEc+=ec; totEd+=ed;
-      const saldo = ec-ed;
-      const tipo = m.tipo==='liquidacion'?'💰 Liq.':m.tipo==='devolucion'?'↩️ Dev.':'📦 Mov.';
-      return `<tr>
-        <td>${m.fecha||'—'}</td>
-        <td>${tipo}</td>
-        <td>${m.cliente||'—'}</td>
-        <td>${m.ref||'—'}</td>
-        <td>${m.transportista||'—'}</td>
-        <td style="text-align:center;color:#2E7D32;font-weight:700">${ec}</td>
-        <td style="text-align:center;color:#0070F2;font-weight:700">${ed}</td>
-        <td style="text-align:center;font-weight:700;color:${saldo>0?'#2E7D32':saldo<0?'#C62828':'#888'}">${saldo>0?'+':''}${saldo}</td>
-        <td style="text-align:center;font-weight:700;color:${m._saldoAcum>0?'#2E7D32':m._saldoAcum<0?'#C62828':'#888'}">${m._saldoAcum>0?'+':''}${m._saldoAcum||0}</td>
-      </tr>`;
-    }).join('');
-    const totSaldo = totEc-totEd;
-    const totalRow = `<tr style="background:#FFCC00 !important;font-weight:700">
-      <td colspan="5" style="text-align:right">TOTAL</td>
-      <td style="text-align:center">${totEc}</td>
-      <td style="text-align:center">${totEd}</td>
-      <td style="text-align:center;color:${totSaldo>0?'#2E7D32':totSaldo<0?'#C62828':'#333'}">${totSaldo>0?'+':''}${totSaldo}</td>
-      <td></td>
-    </tr>`;
-    return `<table>
-      <thead><tr>
-        <th>Fecha</th><th>Tipo</th><th>Cliente</th><th>Referencia</th><th>Transportista</th>
-        <th style="text-align:center">EC</th><th style="text-align:center">ED</th>
-        <th style="text-align:center">Saldo</th><th style="text-align:center">Acum. Trans.</th>
-      </tr></thead>
-      <tbody>${rows}${totalRow}</tbody></table>`;
-  } else {
-    // Agrupado por transportista o cliente
-    const key = epActiveTab==='trans' ? 'transportista' : 'cliente';
-    const grupos = {};
-    data.forEach(m=>{
-      const k = m[key] || '—';
-      if(!grupos[k]) grupos[k] = {nombre:k, ec:0, ed:0, count:0, last:''};
-      grupos[k].ec += parseInt(m.ec)||0;
-      grupos[k].ed += parseInt(m.ed)||0;
-      grupos[k].count++;
-      if((m.fecha||'') > grupos[k].last) grupos[k].last = m.fecha||'';
-    });
-    const arr = Object.values(grupos).map(g=>({...g, saldo: g.ec - g.ed}));
-    arr.sort((a,b)=> Math.abs(b.saldo) - Math.abs(a.saldo));
-    let totEc=0, totEd=0;
-    const rows = arr.map(g=>{
-      totEc+=g.ec; totEd+=g.ed;
-      const interp = g.saldo>0 ? `Le debemos ${g.saldo}` : g.saldo<0 ? `Nos debe ${Math.abs(g.saldo)}` : 'Cuadrado';
-      return `<tr>
-        <td><b>${g.nombre}</b></td>
-        <td style="text-align:center">${g.count}</td>
-        <td style="text-align:center;color:#2E7D32;font-weight:700">${g.ec}</td>
-        <td style="text-align:center;color:#0070F2;font-weight:700">${g.ed}</td>
-        <td style="text-align:center;font-weight:700;color:${g.saldo>0?'#2E7D32':g.saldo<0?'#C62828':'#888'}">${g.saldo>0?'+':''}${g.saldo}</td>
-        <td>${interp}</td>
-        <td>${g.last||'—'}</td>
-      </tr>`;
-    }).join('');
-    const totSaldo = totEc-totEd;
-    const totalRow = `<tr style="background:#FFCC00 !important;font-weight:700">
-      <td>TOTAL</td>
-      <td style="text-align:center">${arr.reduce((a,g)=>a+g.count,0)}</td>
-      <td style="text-align:center">${totEc}</td>
-      <td style="text-align:center">${totEd}</td>
-      <td style="text-align:center;color:${totSaldo>0?'#2E7D32':totSaldo<0?'#C62828':'#333'}">${totSaldo>0?'+':''}${totSaldo}</td>
-      <td colspan="2"></td>
-    </tr>`;
-    return `<table>
-      <thead><tr>
-        <th>${key==='transportista'?'Transportista':'Cliente'}</th>
-        <th style="text-align:center">Movs</th>
-        <th style="text-align:center">EC</th>
-        <th style="text-align:center">ED</th>
-        <th style="text-align:center">Saldo</th>
-        <th>Estado</th>
-        <th>Último mov.</th>
-      </tr></thead>
-      <tbody>${rows}${totalRow}</tbody></table>`;
-  }
-}
-
-function _buildEpPrintHtml(tab, fecha, countTxt, tableHtml, filtrosTxt){
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cargas Pro — Europalets ${tab}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,sans-serif;padding:18px;color:#1A1A1A;font-size:12px}
-    .report-header{display:flex;align-items:center;gap:14px;border-bottom:3px solid #FFCC00;padding-bottom:10px;margin-bottom:6px}
-    .report-logo{font-size:28px}
-    .report-title{font-size:17px;font-weight:700;color:#333;letter-spacing:-.3px}
-    .report-title span{color:#1a56c4}
-    .report-meta{font-size:10px;color:#666;margin-top:2px;letter-spacing:.3px}
-    .report-sub{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:10px;color:#888;border-bottom:1px solid #e0e0e0;padding-bottom:6px}
-    .filtros-row{font-size:10px;color:#666;margin-bottom:12px;padding:6px 10px;background:#FFF8DC;border-radius:4px;border-left:3px solid #FFCC00}
-    .badge{background:#FFCC00;color:#333;font-weight:700;padding:2px 8px;border-radius:2px;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
-    .table-wrap{overflow:hidden;border-radius:4px;border:1px solid #ddd}
-    table{width:100%;border-collapse:collapse;font-size:10px}
-    th{background:#333;color:#fff;padding:7px 9px;text-align:left;font-size:8px;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #FFCC00;white-space:nowrap}
-    td{padding:7px 9px;border-bottom:1px solid #e8e8e8;white-space:nowrap}
-    tr:nth-child(even) td{background:#f8f8f8}
-    tr:last-child td{border-bottom:none}
-    .report-footer{margin-top:10px;font-size:9px;color:#aaa;text-align:right}
-    @media print{ body{padding:8px} .no-print{display:none} @page{margin:10mm} }
-  </style></head><body>
-  <div class="report-header">
-    <div class="report-logo">🟫</div>
-    <div>
-      <div class="report-title">Cargas<span>Pro</span> — Europalets · ${tab}</div>
-      <div class="report-meta">SAT GUADEX · Palma del Río · Generado el ${fecha}</div>
-    </div>
-  </div>
-  <div class="report-sub">
-    <span>${countTxt}</span>
-    <span class="badge">EUROPALETS · ${tab}</span>
-  </div>
-  ${filtrosTxt?`<div class="filtros-row">🔍 ${filtrosTxt}</div>`:''}
-  <div class="table-wrap">${tableHtml}</div>
-  <div class="report-footer">Cargas Pro © ${new Date().getFullYear()} · SAT GUADEX S.L.</div>
-  </body></html>`;
-}
-
-function _filtrosTextoEp(){
-  const f = [];
-  const q = document.getElementById('epSearch').value;
-  const ft = document.getElementById('epFTrans').value;
-  const fc = document.getElementById('epFCli').value;
-  const fd = document.getElementById('epFDesde').value;
-  const fh = document.getElementById('epFHasta').value;
-  if(q) f.push(`Búsqueda: "${q}"`);
-  if(ft) f.push(`Transportista: ${ft}`);
-  if(fc) f.push(`Cliente: ${fc}`);
-  if(fd) f.push(`Desde: ${fd}`);
-  if(fh) f.push(`Hasta: ${fh}`);
-  return f.join(' · ');
-}
-
-function imprimirEp(){
-  const data = filtrarMovimientos();
-  if(data.length===0){ toast('⚠️ Nada que imprimir'); return; }
-  const fecha = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const tab = _epTabLabel();
-  const countTxt = `${data.length} movimiento${data.length===1?'':'s'}`;
-  const tableHtml = _buildEpTable(data);
-  const filtros = _filtrosTextoEp();
-  const html = _buildEpPrintHtml(tab, fecha, countTxt, tableHtml, filtros);
-  const win = window.open('','_blank','width=960,height=700');
-  win.document.write(html + `<script>window.onload=()=>{window.print();}<\\/script>`);
-  win.document.close();
-}
-
-async function compartirEp(){
-  const data = filtrarMovimientos();
-  if(data.length===0){ toast('⚠️ Nada que compartir'); return; }
-  const fecha = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const tab = _epTabLabel();
-
-  const lines = [];
-  lines.push(`🟫 *Cargas Pro — Europalets · ${tab}*`);
-  lines.push(`📅 ${fecha} · ${data.length} movimiento${data.length===1?'':'s'}`);
-  const filtros = _filtrosTextoEp();
-  if(filtros) lines.push(`🔍 ${filtros}`);
-  lines.push('');
-
-  if(epActiveTab==='movs'){
-    let totEc=0, totEd=0;
-    data.forEach(m=>{
-      const ec = parseInt(m.ec)||0, ed = parseInt(m.ed)||0;
-      totEc+=ec; totEd+=ed;
-      const saldo = ec-ed;
-      const tipo = m.tipo==='liquidacion'?'💰':m.tipo==='devolucion'?'↩️':'📦';
-      lines.push(`${tipo} *${m.fecha||'—'} · ${m.cliente||'—'}*`);
-      lines.push(`   🚚 ${m.transportista||'—'}${m.ref?' · Ref. '+m.ref:''}`);
-      lines.push(`   🟢 EC: ${ec}  ·  🔵 ED: ${ed}  ·  Saldo: ${saldo>0?'+':''}${saldo}`);
-      if(m.notas) lines.push(`   💬 ${m.notas}`);
-      lines.push('');
-    });
-    const totSaldo = totEc-totEd;
-    lines.push('━━━━━━━━━━━━━━━━━━');
-    lines.push(`*TOTAL · EC: ${totEc} · ED: ${totEd} · Saldo: ${totSaldo>0?'+':''}${totSaldo}*`);
-  } else {
-    const key = epActiveTab==='trans'?'transportista':'cliente';
-    const icon = epActiveTab==='trans'?'🚚':'🏢';
-    const grupos = {};
-    data.forEach(m=>{
-      const k = m[key]||'—';
-      if(!grupos[k]) grupos[k]={nombre:k,ec:0,ed:0,count:0,last:''};
-      grupos[k].ec+=parseInt(m.ec)||0;
-      grupos[k].ed+=parseInt(m.ed)||0;
-      grupos[k].count++;
-      if((m.fecha||'')>grupos[k].last) grupos[k].last=m.fecha||'';
-    });
-    const arr = Object.values(grupos).map(g=>({...g,saldo:g.ec-g.ed}));
-    arr.sort((a,b)=>Math.abs(b.saldo)-Math.abs(a.saldo));
-    let totEc=0, totEd=0;
-    arr.forEach(g=>{
-      totEc+=g.ec; totEd+=g.ed;
-      const interp = g.saldo>0?`Le debemos ${g.saldo}`:g.saldo<0?`Nos debe ${Math.abs(g.saldo)}`:'Cuadrado';
-      lines.push(`${icon} *${g.nombre}* · Saldo: ${g.saldo>0?'+':''}${g.saldo}`);
-      lines.push(`   EC: ${g.ec}  ·  ED: ${g.ed}  ·  Movs: ${g.count}`);
-      lines.push(`   ➜ ${interp} · Último: ${g.last||'—'}`);
-      lines.push('');
-    });
-    const totSaldo = totEc-totEd;
-    lines.push('━━━━━━━━━━━━━━━━━━');
-    lines.push(`*TOTAL · EC: ${totEc} · ED: ${totEd} · Saldo: ${totSaldo>0?'+':''}${totSaldo}*`);
-  }
-  lines.push('');
-  lines.push('SAT GUADEX · Palma del Río');
-  const texto = lines.join('\n');
-
-  if(navigator.share){
-    try{
-      await navigator.share({ title:`Cargas Pro · Europalets — ${tab}`, text: texto });
-    } catch(e){ if(e.name!=='AbortError'){ console.error(e); toast('❌ Error al compartir'); } }
-  } else {
-    try{
-      await navigator.clipboard.writeText(texto);
-      toast('📋 Informe copiado al portapapeles');
-    }catch(e){ toast('❌ No se pudo compartir'); }
-  }
-}
-
-
 document.querySelectorAll('.modal-scroll').forEach(el => {
   let isDown=false,startY=0,scrollTop=0;
   el.style.cursor='grab';
@@ -2658,6 +1667,5 @@ function repararApp() {
 window.repararApp = repararApp;
 
 </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"7f7b0fd8732c4326aae4b9d58d5c514a","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
