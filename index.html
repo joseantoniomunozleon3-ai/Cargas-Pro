@@ -638,8 +638,14 @@ tr:hover td{background:#FFFDE7}
 @media print{.tbl-actions-cell,.tbl-btn{display:none!important}}
 
 /* === EUROPALETS MÓDULO === */
-.ep-screen{display:none;background:var(--bg);min-height:100vh;padding-bottom:100px}
-.ep-screen.active{display:block}
+.ep-screen{display:none;background:var(--bg)}
+.ep-screen.active{
+  display:block;
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding-bottom:100px;
+  z-index:40;
+}
 .ep-header{
   background:var(--surface);padding:14px 16px 10px 16px;
   border-bottom:3px solid var(--dhl-yellow);position:sticky;top:0;z-index:50;
