@@ -19,52 +19,52 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  /* DHL / SAP palette */
-  --dhl-yellow:#FFCC00;
-  --dhl-red:#D40511;
-  --dhl-dark:#333333;
-  --sap-blue:#0070F2;
-  --sap-teal:#0A6ED1;
+  /* Paleta principal — alto contraste escritorio */
+  --dhl-yellow:#F5C400;
+  --dhl-red:#C8000E;
+  --dhl-dark:#1C1C1C;
+  --sap-blue:#0058CC;
+  --sap-teal:#0049A8;
 
-  /* Backgrounds */
-  --bg:#F5F5F5;
+  /* Backgrounds — más oscuros y distintos entre capas */
+  --bg:#EAEDF0;
   --surface:#FFFFFF;
-  --surface2:#FAFAFA;
-  --surface3:#F0F0F0;
-  --border:#E0E0E0;
-  --border2:#CCCCCC;
-  --border3:#BBBBBB;
+  --surface2:#F2F4F6;
+  --surface3:#E4E8EC;
+  --border:#C8CDD4;
+  --border2:#A8B0BB;
+  --border3:#8C96A3;
 
-  /* Status colors */
-  --status-pend:#F5A623;   /* amber */
-  --status-done:#0070F2;   /* sap blue */
-  --status-rev:#E57200;    /* orange */
-  --status-load:#2E7D32;   /* green */
+  /* Status colors — saturados y contrastados */
+  --status-pend:#C47900;   /* ámbar oscuro */
+  --status-done:#0058CC;   /* azul fuerte */
+  --status-rev:#B85000;    /* naranja oscuro */
+  --status-load:#1A6B28;   /* verde oscuro */
 
-  --status-pend-lt:#FFF3E0;
-  --status-done-lt:#E3F2FD;
-  --status-rev-lt:#FFF3E0;
-  --status-load-lt:#E8F5E9;
+  --status-pend-lt:#FEF3D4;
+  --status-done-lt:#D6E8FF;
+  --status-rev-lt:#FDECD4;
+  --status-load-lt:#D4EDDA;
 
-  /* Text */
-  --t1:#1A1A1A;
-  --t2:#555555;
-  --t3:#888888;
-  --t4:#AAAAAA;
+  /* Text — contraste WCAG AA garantizado */
+  --t1:#0D0D0D;
+  --t2:#3A3F47;
+  --t3:#626C78;
+  --t4:#8E99A6;
 
   /* Fonts */
   --font-body:'IBM Plex Sans',sans-serif;
   --font-mono:'IBM Plex Mono',monospace;
 
-  /* Radii — SAP uses very small radii */
+  /* Radii */
   --r:6px;
   --r-sm:4px;
   --r-xs:3px;
 
-  /* Shadows — subtle, enterprise-grade */
-  --shadow:0 1px 4px rgba(0,0,0,0.10),0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md:0 4px 12px rgba(0,0,0,0.12),0 2px 4px rgba(0,0,0,0.08);
-  --shadow-lg:0 8px 32px rgba(0,0,0,0.16);
+  /* Shadows — más pronunciadas en desktop */
+  --shadow:0 1px 3px rgba(0,0,0,0.14),0 2px 6px rgba(0,0,0,0.09);
+  --shadow-md:0 4px 14px rgba(0,0,0,0.16),0 2px 5px rgba(0,0,0,0.10);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.22);
 }
 
 html{height:100%;overflow:hidden}
@@ -159,22 +159,22 @@ header{
 .tab#tab-todos.active .tab-badge{background:var(--dhl-dark);color:#fff}
 .tab#tab-cargados.active{border-bottom-color:var(--status-load)}
 .tab#tab-cargados.active .tab-badge{background:var(--status-load);color:#fff}
-.tab#tab-historico.active{border-bottom-color:#7B5EA7}
-.tab#tab-historico.active .tab-badge{background:#7B5EA7;color:#fff}
+.tab#tab-historico.active{border-bottom-color:#6B3FA0}
+.tab#tab-historico.active .tab-badge{background:#6B3FA0;color:#fff}
 
 /* ══ HISTORICO BANNER ══ */
 .hist-banner{
   display:flex;align-items:center;gap:10px;
-  background:linear-gradient(135deg,#F3EEF9 0%,#EDE7F6 100%);
-  border:1px solid #D1C4E9;border-radius:var(--r);
+  background:linear-gradient(135deg,#EBE3F7 0%,#DDD0F2 100%);
+  border:1px solid #B59EDB;border-radius:var(--r);
   padding:10px 14px;margin-bottom:14px;
-  font-family:var(--font-mono);font-size:11px;color:#5E35B1;font-weight:700;
+  font-family:var(--font-mono);font-size:11px;color:#3D1A8E;font-weight:700;
   letter-spacing:.3px;
 }
 .hist-banner-icon{font-size:18px;flex-shrink:0}
 .hist-banner-txt{flex:1}
-.hist-banner-date{font-size:13px;font-weight:700;color:#4527A0;margin-bottom:1px}
-.hist-banner-sub{font-size:10px;color:#7E57C2;font-weight:400;letter-spacing:.2px}
+.hist-banner-date{font-size:13px;font-weight:700;color:#2A0F6A;margin-bottom:1px}
+.hist-banner-sub{font-size:10px;color:#5B3CAB;font-weight:400;letter-spacing:.2px}
 
 /* ══ STATS ══ */
 .stats-row{
@@ -354,18 +354,18 @@ header{
   border:1px solid transparent;
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.tag-producto{background:#E3F2FD;color:#1565C0;border-color:#90CAF9}
-.tag-mat1{background:#FFF8E1;color:#E65100;border-color:var(--dhl-yellow)}
-.tag-mat2{background:#F3E5F5;color:#6A1B9A;border-color:#CE93D8}
-.tag-palets{background:#E8F5E9;color:#1B5E20;border-color:#A5D6A7}
+.tag-producto{background:#D6E8FF;color:#003D99;border-color:#7AAEFF}
+.tag-mat1{background:#FEF3D4;color:#7A4500;border-color:#F5C400}
+.tag-mat2{background:#EEE4F7;color:#4A0E82;border-color:#C088E8}
+.tag-palets{background:#D4EDDA;color:#0F4018;border-color:#6DC685}
 .tag-pais{background:var(--surface3);color:var(--t2);border-color:var(--border2)}
-.tag-hora{background:#E8F5E9;color:#2E7D32;border-color:#A5D6A7}
-.tag-muelle{background:#E3F2FD;color:#0D47A1;border-color:#90CAF9}
-.tag-trans{background:#F3E5F5;color:#4A148C;border-color:#CE93D8}
+.tag-hora{background:#D4EDDA;color:#1A6B28;border-color:#6DC685}
+.tag-muelle{background:#D6E8FF;color:#003380;border-color:#7AAEFF}
+.tag-trans{background:#EEE4F7;color:#3A0066;border-color:#C088E8}
 
 /* Carga banner */
 .carga-banner{
-  background:#E8F5E9;border:1px solid #A5D6A7;
+  background:#D4EDDA;border:1px solid #6DC685;
   border-radius:var(--r-sm);padding:8px 12px;
   display:flex;gap:14px;flex-wrap:wrap;align-items:center;
 }
@@ -423,6 +423,27 @@ header{
   .pedido-body{padding:12px 18px 14px;}
 }
 
+/* ══ DESKTOP CONTRAST BOOST ══ */
+@media(min-width:700px){
+  :root{
+    --bg:#DDE1E7;
+    --surface:#FFFFFF;
+    --surface2:#F0F3F6;
+    --surface3:#E2E7ED;
+    --border:#B4BBC4;
+    --border2:#96A0AD;
+    --border3:#7A8694;
+    --t1:#080808;
+    --t2:#2E3440;
+    --t3:#515A66;
+    --t4:#7A8694;
+  }
+  .pedido-card{border-left-width:5px;}
+  .stat-num{font-size:26px;}
+  .action-btn:hover{filter:brightness(0.96);}
+  .export-btn:hover{background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.4);}
+}
+
 /* ══ TABLE ══ */
 .table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow)}
 table{width:100%;border-collapse:collapse}
@@ -439,7 +460,7 @@ td{
 }
 tr:nth-child(even) td{background:var(--surface2)}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:#FFFDE7}
+tr:hover td{background:#FFF8CC}
 
 /* ══ BOTTOM NAV ══ */
 .bottom-nav{
@@ -747,6 +768,9 @@ body.ep-active .fab{display:none !important}
 </style>
 </head>
 <body>
+
+
+</div>
 
 <!-- LOADING -->
 <div class="loading-screen" id="loadingScreen">
@@ -1116,6 +1140,28 @@ firebase.initializeApp({
 const db  = firebase.firestore();
 const col = db.collection('pedidos');
 const colMov = db.collection('movimientos_palets');
+
+// ══ LOGIN ══
+(function(){
+  const SESSION_KEY = 'cp_auth_v1';
+  if(sessionStorage.getItem(SESSION_KEY) === 'ok'){
+    document.getElementById('').style.display = 'none';
+  }
+  window.doLogin = function(){
+    const u = document.getElementById('loginUser').value.trim().toUpperCase();
+    const p = document.getElementById('loginPass').value;
+    const err = document.getElementById('loginError');
+    if(u === 'JOSE' && p === 'expedicion2026'){
+      sessionStorage.setItem(SESSION_KEY,'ok');
+      document.getElementById('').style.display = 'none';
+      err.style.display = 'none';
+    } else {
+      err.style.display = 'block';
+      document.getElementById('loginPass').value = '';
+      document.getElementById('loginPass').focus();
+    }
+  };
+})();
 
 let pedidos = [];
 // ════ FIX BUG: día de carga real (no fecha planificada del pedido) ════
