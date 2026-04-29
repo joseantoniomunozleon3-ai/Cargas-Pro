@@ -843,7 +843,7 @@ body.ep-active .fab{display:none !important}
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <div class="nav-item active" id="nav-pend" onclick="setTab('pendientes')"><span>📦</span>Confección</div>
-  <div class="nav-item" onclick="setTab('terminado')"><span>✅</span>Terminado</div>
+  <div class="nav-item" id="nav-term" onclick="setTab('terminado')"><span>✅</span>Terminado</div>
   <div class="nav-item" id="nav-todos" onclick="setTab('todos')"><span>📋</span>Todos</div>
   <div class="nav-item" id="nav-carg" onclick="setTab('cargados')"><span>🚛</span>Cargados</div>
   <div class="nav-item" id="nav-hist" onclick="setTab('historico')"><span>🕐</span>Histórico</div>
@@ -1156,24 +1156,46 @@ function confirm2(icon, title, msg, okLabel, okClass, cb) {
   confirmCallback = cb;
   document.getElementById('confirmBg').classList.add('open');
 }
-function closeConfirm() { document.getElementById('confirmBg').classList.remove('open'); confirmCallback=null; }
+function closeConfirm() {
+  document.getElementById('confirmBg').classList.remove('open');
+  confirmCallback=null;
+  if(window._tmpCancelCarga){ window._tmpCancelCarga(); window._tmpCancelCarga=null; }
+}
 function doConfirmOk() { const cb=confirmCallback; closeConfirm(); if(cb) cb(); }
 
-col.onSnapshot((snapshot) => {
-  pedidos = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-  pedidos.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+function hideLoadingScreen() {
   const ls = document.getElementById('loadingScreen');
   if (ls && !ls.classList.contains('hide')) {
     ls.classList.add('hide');
-    setTimeout(() => ls.remove(), 400);
+    setTimeout(() => { if(ls.parentNode) ls.remove(); }, 400);
   }
+}
+
+// Timeout de seguridad: si en 8s no llega respuesta de Firestore, ocultar pantalla y mostrar error
+const _loadTimeout = setTimeout(() => {
+  hideLoadingScreen();
+  setSyncStatus('offline');
+  toast('⚠️ No se pudo conectar. Comprueba la conexión.');
+}, 8000);
+
+col.onSnapshot((snapshot) => {
+  clearTimeout(_loadTimeout);
+  pedidos = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+  pedidos.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  hideLoadingScreen();
   setSyncStatus('ok');
   render();
 }, (err) => {
+  clearTimeout(_loadTimeout);
   console.error('Firestore:', err);
   setSyncStatus('offline');
   const ls = document.getElementById('loadingScreen');
-  if (ls) { ls.querySelector('.loading-txt').textContent = 'Sin conexión'; }
+  if (ls) {
+    ls.querySelector('.loading-txt').textContent = 'Sin conexión · Toca para reintentar';
+    ls.querySelector('.loading-spinner').style.display = 'none';
+    ls.style.cursor = 'pointer';
+    ls.onclick = () => location.reload();
+  }
   toast('⚠️ Sin conexión a la nube');
 });
 
@@ -1195,12 +1217,25 @@ async function fbDelete(id) {
 
 function setTab(t) {
   activeTab = t;
+  // Resetear filtro "Hoy" al cambiar de pestaña
+  if (filtroHoyActivo) {
+    filtroHoyActivo = false;
+    document.getElementById('fFechaDesde').value = '';
+    document.getElementById('fFechaHasta').value = '';
+    resetHoyBtn();
+  }
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
+  // Actualizar nav bottom
+  document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-pend').classList.toggle('active', t==='pendientes');
+  document.getElementById('nav-term').classList.toggle('active', t==='terminado');
   document.getElementById('nav-todos').classList.toggle('active', t==='todos');
   document.getElementById('nav-carg').classList.toggle('active', t==='cargados');
   document.getElementById('nav-hist').classList.toggle('active', t==='historico');
+  // Actualizar título de la pestaña del navegador
+  const tabTitles = {pendientes:'📦 Confección', terminado:'✅ Terminado', todos:'📋 Todos', cargados:'🚛 Cargados', historico:'🕐 Histórico'};
+  document.title = (tabTitles[t] || 'Cargas Pro') + ' · Cargas Pro';
   render();
 }
 
@@ -1532,8 +1567,8 @@ async function savePedido() {
 function limpiarPedidoModal() {
   confirm2('🗑','¿Limpiar formulario?','Se borrarán todos los campos','Limpiar','',()=>{
     ['num','grupo','producto','ref','uds','pais','mat1','mat2','muelle','transportista','notas','ec','ed','europalets'].forEach(k=>{ const el=document.getElementById('f-'+k); if(el) el.value=''; });
-    document.getElementById('f-hora').value='';
-    document.getElementById('f-hora-salida').value='';
+    const fHora = document.getElementById('f-hora'); if(fHora) fHora.value='';
+    const fHoraSalida = document.getElementById('f-hora-salida'); if(fHoraSalida) fHoraSalida.value='';
     document.getElementById('f-status').value='pendiente';
     document.getElementById('f-fecha').value=new Date().toISOString().slice(0,10);
   });
@@ -1560,6 +1595,20 @@ async function confirmarCarga() {
   const p=pedidos.find(x=>String(x.id)===String(cargarId)); if(!p) return;
   const ec = parseInt(document.getElementById('c-ec').value)||0;
   const ed = parseInt(document.getElementById('c-ed').value)||0;
+  // Avisar si EC/ED quedarán a 0 pero el pedido tenía valores previos
+  const prevEc = p.ec||0, prevEd = p.ed||0;
+  if(ec===0 && ed===0 && (prevEc>0 || prevEd>0)) {
+    const cont = await new Promise(res=>{
+      confirm2('⚠️','EC y ED a cero',
+        `El pedido tenía EC:${prevEc} ED:${prevEd}. ¿Confirmar la carga con EC:0 y ED:0?`,
+        'Sí, confirmar','blue', ()=>res(true));
+      // Si cancela, la promesa nunca resuelve; añadimos listener al cancel
+      const origClose = closeConfirm;
+      window._tmpCancelCarga = ()=>res(false);
+    });
+    if(!cont){ window._tmpCancelCarga=null; return; }
+    window._tmpCancelCarga=null;
+  }
   const updated={...p, status:'cargado',
     cargadoAt: new Date().toISOString().slice(0,10),
     hora:document.getElementById('c-hora').value,
