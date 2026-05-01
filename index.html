@@ -387,7 +387,7 @@ header::after{
 .info-block.sm{flex:0 0 70px;}
 .info-block.md{flex:0 0 130px;}
 .info-block.lg{flex:0 0 180px;}
-.info-label{font-family:var(--font-body);font-size:9px;color:var(--t4);text-transform:uppercase;letter-spacing:.9px;font-weight:700;white-space:nowrap;}
+.info-label{font-family:var(--font-body);font-size:9px;color:#111111;text-transform:uppercase;letter-spacing:.9px;font-weight:700;white-space:nowrap;}
 .info-val{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--t1)}
 
 /* Tags */
@@ -539,19 +539,20 @@ tr:hover td{background:rgba(255,107,0,0.05)}
 .modal-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 22px 18px}
 .fsec{
   font-family:var(--font-body);font-size:10px;text-transform:uppercase;
-  letter-spacing:1.5px;color:#FFFFFF;font-weight:800;
-  margin:18px 0 12px;padding:7px 12px;
-  background:linear-gradient(135deg,var(--dhl-yellow) 0%,var(--dhl-yellow-dark) 100%);
-  border-radius:var(--r-sm);
+  letter-spacing:1.5px;color:#111111;font-weight:800;
+  margin:18px 0 8px;padding:4px 0;
+  background:transparent;
+  border-radius:0;
+  border-bottom:2px solid #D95500;
   display:flex;align-items:center;gap:8px;
-  box-shadow:0 2px 6px rgba(245,196,0,0.2);
+  box-shadow:none;
 }
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fgrid.full{grid-template-columns:1fr}
 .fg{display:flex;flex-direction:column;gap:6px}
 .fg label{
   font-family:var(--font-body);font-size:11px;text-transform:uppercase;
-  letter-spacing:.9px;color:#B84400;font-weight:800;margin-bottom:0;
+  letter-spacing:.9px;color:#111111 !important;font-weight:800;margin-bottom:0;
 }
 .fg input,.fg select,.fg textarea{
   background:#FFFFFF;
