@@ -1127,14 +1127,15 @@ body.ep-active .fab{display:none !important}
   <div class="ep-filters">
     <select id="epFTrans" onchange="renderEp()"><option value="">Todos los transportistas</option></select>
     <select id="epFCli" onchange="renderEp()"><option value="">Todos los clientes</option></select>
-    <input type="date" id="epFDesde" onchange="renderEp()" placeholder="Desde">
-    <input type="date" id="epFHasta" onchange="renderEp()" placeholder="Hasta">
+    <input type="date" id="epFDesde" onchange="desactivarHoyEp();renderEp()" placeholder="Desde">
+    <input type="date" id="epFHasta" onchange="desactivarHoyEp();renderEp()" placeholder="Hasta">
   </div>
 
-  <div class="ep-actions-row">
-    <button class="ep-btn" onclick="limpiarFiltrosEp()">🗑 Limpiar filtros</button>
-    <button class="ep-btn" onclick="imprimirEp()">🖨️ Imprimir</button>
-    <button class="ep-btn" onclick="compartirEp()">📱 Compartir</button>
+  <div class="ep-actions-row" style="flex-wrap:wrap;justify-content:flex-start">
+    <button class="ep-btn" id="btn-hoy-ep" onclick="filtroHoyEp()">📅 Hoy</button>
+    <button class="ep-btn" onclick="limpiarFiltrosEp()">🗑 Limpiar</button>
+    <button class="ep-btn" onclick="imprimirEp()" title="Imprimir" style="padding:8px 12px;font-size:16px">🖨️</button>
+    <button class="ep-btn" onclick="compartirEp()" title="Compartir" style="padding:8px 12px;font-size:16px">📱</button>
     <button class="ep-btn ep-btn-blue" onclick="exportarEpCSV()">📤 CSV</button>
   </div>
 
@@ -1142,6 +1143,26 @@ body.ep-active .fab{display:none !important}
 </div>
 
 <button class="ep-fab" id="epFab" onclick="abrirNuevoMovimiento()" title="Añadir movimiento manual">＋</button>
+
+<!-- MODAL ALBARÁN -->
+<div class="modal-bg" id="mAlbaran" onclick="if(event.target===this)closeMAlbaran()">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">📋 Número de albarán</div>
+    </div>
+    <div class="modal-scroll" style="padding:16px 20px">
+      <div class="fg">
+        <label>Albarán</label>
+        <input id="input-albaran" placeholder="Ej: A26/1765" autocomplete="off" style="font-size:16px;font-family:var(--font-mono);letter-spacing:.5px">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="mbtn mbtn-cancel" onclick="closeMAlbaran()">Cancelar</button>
+      <button class="mbtn mbtn-save" onclick="guardarAlbaran()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL NUEVO/EDITAR MOVIMIENTO MANUAL -->
 <div class="modal-bg" id="mMov" onclick="if(event.target===this)closeMovModal()">
@@ -1360,19 +1381,6 @@ async function fbDelete(id) {
 
 function setTab(t) {
   activeTab = t;
-  // Resetear filtro "Hoy" al cambiar de pestaña
-  if (filtroHoyActivo) {
-    filtroHoyActivo = false;
-    document.getElementById('fFechaDesde').value = '';
-    document.getElementById('fFechaHasta').value = '';
-    resetHoyBtn();
-  }
-  if (filtroMañanaActivo) {
-    filtroMañanaActivo = false;
-    document.getElementById('fFechaDesde').value = '';
-    document.getElementById('fFechaHasta').value = '';
-    resetMañanaBtn();
-  }
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
   // Actualizar nav bottom
@@ -1744,8 +1752,27 @@ async function savePedido() {
   const tieneED = (parseInt(get('f-ed'))||0) > 0;
   let albaran = '';
   if(tieneEC || tieneED || sinIntercambio){
-    const val = prompt('📋 Número de albarán:','');
-    if(val !== null) albaran = val.trim();
+    albaran = await new Promise(res => {
+      document.getElementById('input-albaran').value = '';
+      document.getElementById('mAlbaran').classList.add('open');
+      setTimeout(()=>document.getElementById('input-albaran').focus(), 200);
+      const btnSave = document.getElementById('mAlbaran').querySelector('.mbtn-save');
+      const btnCancel = document.getElementById('mAlbaran').querySelector('.mbtn-cancel');
+      const orig = window.guardarAlbaran;
+      window.guardarAlbaran = ()=>{ 
+        const v = document.getElementById('input-albaran').value.trim();
+        document.getElementById('mAlbaran').classList.remove('open');
+        window.guardarAlbaran = orig;
+        res(v);
+      };
+      const origClose = window.closeMAlbaran;
+      window.closeMAlbaran = ()=>{
+        document.getElementById('mAlbaran').classList.remove('open');
+        window.closeMAlbaran = origClose;
+        window.guardarAlbaran = orig;
+        res('');
+      };
+    });
   }
   if(albaran) p.albaran = albaran;
   closePedidoModal();
@@ -2061,6 +2088,11 @@ window.limpiarCargarModal=limpiarCargarModal; window.reabrir=reabrir; window.del
 // ============== EUROPALETS ==============
 function abrirEuropalets() {
   document.body.classList.add('ep-active');
+  // Restaurar estado visual del botón Hoy
+  const hoy = new Date().toISOString().slice(0,10);
+  const desde = document.getElementById('epFDesde').value;
+  const hasta = document.getElementById('epFHasta').value;
+  if(desde===hoy && hasta===hoy) document.getElementById('btn-hoy-ep').classList.add('ep-btn-primary');
   document.getElementById('epScreen').classList.add('active');
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('nav-ep').classList.add('active');
@@ -2110,12 +2142,38 @@ function llenarSelectoresEp(){
   if(dlSi) dlSi.innerHTML = [...setT].sort().map(t=>`<option value="${t}">`).join('');
 }
 
+function desactivarHoyEp(){
+  const hoy = new Date().toISOString().slice(0,10);
+  const desde = document.getElementById('epFDesde').value;
+  const hasta = document.getElementById('epFHasta').value;
+  const btn = document.getElementById('btn-hoy-ep');
+  if(desde !== hoy || hasta !== hoy) btn.classList.remove('ep-btn-primary');
+}
+
+function filtroHoyEp(){
+  const btn = document.getElementById('btn-hoy-ep');
+  const activo = btn.classList.contains('ep-btn-primary');
+  if(activo){
+    // Desactivar
+    document.getElementById('epFDesde').value='';
+    document.getElementById('epFHasta').value='';
+    btn.classList.remove('ep-btn-primary');
+  } else {
+    const hoy = new Date().toISOString().slice(0,10);
+    document.getElementById('epFDesde').value = hoy;
+    document.getElementById('epFHasta').value = hoy;
+    btn.classList.add('ep-btn-primary');
+  }
+  renderEp();
+}
+
 function limpiarFiltrosEp(){
   document.getElementById('epSearch').value='';
   document.getElementById('epFTrans').value='';
   document.getElementById('epFCli').value='';
   document.getElementById('epFDesde').value='';
   document.getElementById('epFHasta').value='';
+  document.getElementById('btn-hoy-ep').classList.remove('ep-btn-primary');
   renderEp();
 }
 
@@ -2388,11 +2446,23 @@ function editarMovimiento(id){
 
 function closeMovModal(){ document.getElementById('mMov').classList.remove('open'); editMovId=null; }
 
-async function editarAlbaran(id, actual){
-  const val = prompt('📋 Número de albarán:', actual||'');
-  if(val===null) return;
+let _albaranMovId = null;
+function editarAlbaran(id, actual){
+  _albaranMovId = id;
+  document.getElementById('input-albaran').value = actual||'';
+  document.getElementById('mAlbaran').classList.add('open');
+  setTimeout(()=>document.getElementById('input-albaran').focus(), 200);
+}
+function closeMAlbaran(){
+  document.getElementById('mAlbaran').classList.remove('open');
+  _albaranMovId = null;
+}
+async function guardarAlbaran(){
+  const val = document.getElementById('input-albaran').value.trim();
+  if(!_albaranMovId) return;
   try{
-    await colMov.doc(id).update({albaran: val.trim()});
+    await colMov.doc(_albaranMovId).update({albaran: val});
+    closeMAlbaran();
     toast('📋 Albarán actualizado');
   }catch(e){ console.error(e); toast('❌ Error'); }
 }
