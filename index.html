@@ -1290,7 +1290,7 @@ let movimientos = [];
 let epActiveTab = 'movs';
 let editMovId = null;
 let editId = null, cargarId = null;
-let activeTab = 'pendientes', activeView = 'cards';
+let activeTab = 'todos', activeView = 'cards';
 let confirmCallback = null;
 
 const n = new Date();
@@ -1348,6 +1348,16 @@ col.onSnapshot((snapshot) => {
   pedidos.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
   hideLoadingScreen();
   setSyncStatus('ok');
+  // Activar HOY y pestaña TODOS al primer arranque
+  if(!window._initialRenderDone){
+    window._initialRenderDone = true;
+    const hoy = new Date().toISOString().slice(0,10);
+    filtroHoyActivo = true;
+    document.getElementById('fFechaDesde').value = hoy;
+    document.getElementById('fFechaHasta').value = hoy;
+    const btn = document.getElementById('hoyBtn');
+    if(btn){ btn.style.background='var(--dhl-yellow)'; btn.style.color='var(--dhl-dark)'; btn.style.borderColor='var(--dhl-yellow-dark)'; }
+  }
   render();
 }, (err) => {
   clearTimeout(_loadTimeout);
