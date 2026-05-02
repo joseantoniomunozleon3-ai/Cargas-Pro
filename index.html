@@ -387,7 +387,7 @@ header::after{
 .info-block.sm{flex:0 0 70px;}
 .info-block.md{flex:0 0 130px;}
 .info-block.lg{flex:0 0 180px;}
-.info-label{font-family:var(--font-body);font-size:9px;color:#111111;text-transform:uppercase;letter-spacing:.9px;font-weight:700;white-space:nowrap;}
+.info-label{font-family:var(--font-body);font-size:9px;color:var(--t4);text-transform:uppercase;letter-spacing:.9px;font-weight:700;white-space:nowrap;}
 .info-val{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--t1)}
 
 /* Tags */
@@ -539,20 +539,19 @@ tr:hover td{background:rgba(255,107,0,0.05)}
 .modal-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 22px 18px}
 .fsec{
   font-family:var(--font-body);font-size:10px;text-transform:uppercase;
-  letter-spacing:1.5px;color:#111111;font-weight:800;
-  margin:18px 0 8px;padding:4px 0;
-  background:transparent;
-  border-radius:0;
-  border-bottom:2px solid #D95500;
+  letter-spacing:1.5px;color:#FFFFFF;font-weight:800;
+  margin:18px 0 12px;padding:7px 12px;
+  background:linear-gradient(135deg,var(--dhl-yellow) 0%,var(--dhl-yellow-dark) 100%);
+  border-radius:var(--r-sm);
   display:flex;align-items:center;gap:8px;
-  box-shadow:none;
+  box-shadow:0 2px 6px rgba(245,196,0,0.2);
 }
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fgrid.full{grid-template-columns:1fr}
 .fg{display:flex;flex-direction:column;gap:6px}
 .fg label{
   font-family:var(--font-body);font-size:11px;text-transform:uppercase;
-  letter-spacing:.9px;color:#111111 !important;font-weight:800;margin-bottom:0;
+  letter-spacing:.9px;color:#B84400;font-weight:800;margin-bottom:0;
 }
 .fg input,.fg select,.fg textarea{
   background:#FFFFFF;
@@ -2808,7 +2807,7 @@ const iconSVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><re
 const iconB64='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(iconSVG)));
 document.getElementById('apple-icon').href=iconB64;
 const mf={name:"Cargas Pro",short_name:"Cargas",description:"Registro de pedidos y cargas",start_url:".",display:"standalone",orientation:"portrait",background_color:"#EEF0F4",theme_color:"#FF6B00",lang:"es",icons:[{src:iconB64,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
-document.getElementById('pwa-manifest').href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/json'}));
+document.getElementById('pwa-manifest').href='data:application/json;base64,'+btoa(unescape(encodeURIComponent(JSON.stringify(mf))));
 
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(!window.matchMedia('(display-mode: standalone)').matches)showInstallBanner();});
@@ -2835,10 +2834,10 @@ if(isIOS&&!isStandalone){
 }
 window.addEventListener('appinstalled',()=>{document.getElementById('pwa-banner')?.remove();toast('🎉 ¡App instalada!');});
 
-// ══ SERVICE WORKER ══
+// ══ SERVICE WORKER como data URI (compatible con file://) ══
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'cargas-pro-v1';
+const CACHE = 'cargas-pro-v2';
 const CORE = [
   'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap',
   'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
@@ -2861,31 +2860,29 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url;
-  // Firebase/Firestore: siempre red, sin caché
+  if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('chrome-extension:')) return;
   if (url.includes('firestore.googleapis.com') || url.includes('firebase')) {
     e.respondWith(fetch(e.request).catch(() => new Response('', {status: 503})));
     return;
   }
-  // Fuentes y assets estáticos: cache-first
   if (url.includes('fonts.g') || url.includes('gstatic.com')) {
     e.respondWith(
       caches.match(e.request).then(cached => cached || fetch(e.request).then(r => {
         const clone = r.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
         return r;
-      }))
+      }).catch(()=> new Response('',{status:503})))
     );
     return;
   }
-  // HTML principal: network-first, caché como respaldo
   e.respondWith(
     fetch(e.request).then(r => {
-      if (r.ok) {
+      if (r && r.ok) {
         const clone = r.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
       }
       return r;
-    }).catch(() => caches.match(e.request))
+    }).catch(() => caches.match(e.request).then(c => c || new Response('Sin conexión',{status:503})))
   );
 });
 
@@ -2897,18 +2894,23 @@ self.addEventListener('message', e => {
   }
 });
   `;
-  const swBlob = new Blob([swCode], {type:'application/javascript'});
-  const swUrl  = URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl).then(reg => {
-    reg.addEventListener('updatefound', () => {
-      const nw = reg.installing;
-      nw.addEventListener('statechange', () => {
-        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-          toast('🔄 Actualización disponible — recarga la app');
-        }
+  try {
+    const swB64 = 'data:application/javascript;base64,' + btoa(unescape(encodeURIComponent(swCode)));
+    navigator.serviceWorker.register(swB64, {scope: './'}).then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            toast('🔄 Actualización disponible — recarga la app');
+          }
+        });
       });
+    }).catch(() => {
+      const swBlob = new Blob([swCode], {type:'application/javascript'});
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(()=>{});
     });
-  }).catch(()=>{});
+  } catch(e) {}
 }
 
 // ══ REPARAR APP ══
