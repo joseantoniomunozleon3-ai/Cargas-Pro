@@ -1232,7 +1232,7 @@ body.ep-active .fab{display:none !important}
         <div class="fg"><label>Notas</label><textarea id="si-notas" placeholder="Opcional: motivo del saldo inicial..."></textarea></div>
       </div>
       <div style="font-size:11px;color:var(--t3);margin:10px 4px;padding:8px;background:#FFF8DC;border-radius:6px;border-left:3px solid #FFCC00;line-height:1.5">
-        💡 Un saldo positivo significa que <b>nosotros le debemos</b> esos palets. Negativo = <b>el transportista nos los debe</b>.<br>
+        💡 Un saldo negativo significa que <b>el transportista nos debe</b> esos palets. Positivo = <b>nosotros le debemos</b>.<br>
         Solo puede haber un saldo inicial por transportista; se sustituirá si ya existe.
       </div>
     </div>
@@ -2207,7 +2207,7 @@ function renderEp(){
     if(!sini[s.transportista] || (s.fecha||'')>(sini[s.transportista].fecha||'')) sini[s.transportista]=s;
   });
   const totSaldoIni = Object.values(sini).reduce((a,s)=>a+(parseInt(s.saldo_inicial)||0),0);
-  const saldo = totEc - totEd + totSaldoIni;
+  const saldo = totEd - totEc + totSaldoIni;
   document.getElementById('ep-tot-ec').textContent = totEc;
   document.getElementById('ep-tot-ed').textContent = totEd;
   const elS = document.getElementById('ep-tot-saldo');
@@ -2254,7 +2254,7 @@ function renderEpMovs(data){
       if(si && (m.fecha||'') < si.fecha){
         m._saldoTransAcum = null; // no aplica
       } else {
-        saldosTrans[t] = (saldosTrans[t]||0) + (parseInt(m.ec)||0) - (parseInt(m.ed)||0);
+        saldosTrans[t] = (saldosTrans[t]||0) + (parseInt(m.ed)||0) - (parseInt(m.ec)||0);
         m._saldoTransAcum = saldosTrans[t];
       }
     }
@@ -2283,7 +2283,7 @@ function renderEpMovs(data){
       return;
     }
     const ec = parseInt(m.ec)||0, ed = parseInt(m.ed)||0;
-    const saldoMov = ec - ed;
+    const saldoMov = ed - ec;
     const saldoCls = saldoMov>0?'pos':saldoMov<0?'neg':'';
     const tipoLbl = m.tipo==='liquidacion'?'💰 Liquidación':m.tipo==='devolucion'?'↩️ Devolución':'📦 Movimiento';
     const acum = m._saldoTransAcum;
@@ -2349,16 +2349,16 @@ function renderEpAgrupado(data, key, icon){
   const arr = Object.values(grupos).map(g=>{
     const si = saldosIni[g.nombre];
     const saldoIni = si ? (parseInt(si.saldo_inicial)||0) : 0;
-    return {...g, saldoIni, saldo: saldoIni + g.ec - g.ed};
+    return {...g, saldoIni, saldo: saldoIni + g.ed - g.ec};
   });
   arr.sort((a,b)=> Math.abs(b.saldo) - Math.abs(a.saldo));
   let html='';
   arr.forEach(g=>{
     const cls = g.saldo>0?'pos':g.saldo<0?'neg':'zero';
     const interp = g.saldo>0
-      ? `Le debemos ${g.saldo} palet${g.saldo===1?'':'s'}`
+      ? `Nos debe ${g.saldo} palet${g.saldo===1?'':'s'}`
       : g.saldo<0
-        ? `Nos debe ${Math.abs(g.saldo)} palet${Math.abs(g.saldo)===1?'':'s'}`
+        ? `Le debemos ${Math.abs(g.saldo)} palet${Math.abs(g.saldo)===1?'':'s'}`
         : 'Saldo cuadrado';
     const hasSi = g.saldoIni!==0 || g.desdeFecha;
     html += `<div class="ep-bal-card">
@@ -2404,8 +2404,8 @@ function liquidarSaldo(transportista, saldo){
         cliente: '— LIQUIDACIÓN —',
         transportista: transportista,
         ref: 'LIQ-'+Date.now(),
-        ec: saldo<0 ? Math.abs(saldo) : 0,
-        ed: saldo>0 ? saldo : 0,
+        ec: saldo>0 ? saldo : 0,
+        ed: saldo<0 ? Math.abs(saldo) : 0,
         notas: `Liquidación automática para cuadrar saldo a 0`,
         manual: true,
         createdAt: Date.now()
