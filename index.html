@@ -1016,13 +1016,19 @@ body.ep-active .fab{display:none !important}
       <div class="fsec">Euros</div>
       <div class="fgrid">
         <div class="fg fg-ec"><label>🟢 EC (Cargados)</label><input id="f-ec" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric"></div>
-        <div class="fg fg-ed"><label>🔵 ED (Devueltos)</label><input id="f-ed" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric"></div>
+        <div class="fg fg-ed"><label>🔵 ED (Devueltos)</label><input id="f-ed" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric" oninput="actualizarVisibilidadAlbaran()"></div>
       </div>
       <div class="fgrid full" style="margin-top:6px">
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2);cursor:pointer;padding:4px 0">
-          <input type="checkbox" id="f-sin-intercambio" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer">
+          <input type="checkbox" id="f-sin-intercambio" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer" onchange="actualizarVisibilidadAlbaran()">
           <span>Sin intercambio de euros</span>
         </label>
+      </div>
+      <div class="fgrid full" id="bloque-albaran-pedido" style="margin-top:8px;display:none">
+        <div class="fg">
+          <label>📋 Nº Albarán</label>
+          <input id="f-albaran-pedido" placeholder="Ej: A26/1765" autocomplete="off" style="font-family:var(--font-mono);letter-spacing:.5px">
+        </div>
       </div>
       <div class="fsec">Estado y notas</div>
       <div class="fgrid">
@@ -1733,10 +1739,25 @@ function openPedidoModal(idOrNull) {
   });
   document.getElementById('f-status').value = p?.status||'pendiente';
   document.getElementById('f-fecha').value  = p?.fecha||new Date().toISOString().slice(0,10);
+  // Restaurar checkbox "Sin intercambio" y el campo albarán
+  const sinIntEl = document.getElementById('f-sin-intercambio');
+  if(sinIntEl) sinIntEl.checked = p?.sinIntercambio||false;
+  const albaranEl = document.getElementById('f-albaran-pedido');
+  if(albaranEl) albaranEl.value = p?.albaran||'';
+  // Mostrar/ocultar campo albarán según ED o sinIntercambio
+  actualizarVisibilidadAlbaran();
   document.getElementById('mPedido').classList.add('open');
   setTimeout(()=>{ document.querySelector('#mPedido .modal-scroll').scrollTop=0; },50);
 }
 function closePedidoModal() { document.getElementById('mPedido').classList.remove('open'); editId=null; }
+
+function actualizarVisibilidadAlbaran(){
+  const ed = parseInt(document.getElementById('f-ed').value)||0;
+  const sinInt = document.getElementById('f-sin-intercambio').checked;
+  const bloque = document.getElementById('bloque-albaran-pedido');
+  if(bloque) bloque.style.display = (ed > 0 || sinInt) ? '' : 'none';
+}
+window.actualizarVisibilidadAlbaran = actualizarVisibilidadAlbaran;
 
 async function savePedido() {
   const get = id => document.getElementById(id).value.trim();
@@ -1758,33 +1779,12 @@ async function savePedido() {
   };
   if(!p.grupo){ toast('⚠️ Indica el cliente'); return; }
   const sinIntercambio = document.getElementById('f-sin-intercambio').checked;
-  const tieneEC = (parseInt(get('f-ec'))||0) > 0;
+  p.sinIntercambio = sinIntercambio;
   const tieneED = (parseInt(get('f-ed'))||0) > 0;
-  let albaran = '';
-  if(tieneEC || tieneED || sinIntercambio){
-    albaran = await new Promise(res => {
-      document.getElementById('input-albaran').value = '';
-      document.getElementById('mAlbaran').classList.add('open');
-      setTimeout(()=>document.getElementById('input-albaran').focus(), 200);
-      const btnSave = document.getElementById('mAlbaran').querySelector('.mbtn-save');
-      const btnCancel = document.getElementById('mAlbaran').querySelector('.mbtn-cancel');
-      const orig = window.guardarAlbaran;
-      window.guardarAlbaran = ()=>{ 
-        const v = document.getElementById('input-albaran').value.trim();
-        document.getElementById('mAlbaran').classList.remove('open');
-        window.guardarAlbaran = orig;
-        res(v);
-      };
-      const origClose = window.closeMAlbaran;
-      window.closeMAlbaran = ()=>{
-        document.getElementById('mAlbaran').classList.remove('open');
-        window.closeMAlbaran = origClose;
-        window.guardarAlbaran = orig;
-        res('');
-      };
-    });
+  if(tieneED || sinIntercambio){
+    const albaranVal = (document.getElementById('f-albaran-pedido')?.value||'').trim();
+    if(albaranVal) p.albaran = albaranVal;
   }
-  if(albaran) p.albaran = albaran;
   closePedidoModal();
   await fbSave(p);
   await syncMovimientoDePedido(p);
@@ -1795,6 +1795,8 @@ function limpiarPedidoModal() {
   confirm2('🗑','¿Limpiar formulario?','Se borrarán todos los campos','Limpiar','',()=>{
     ['num','grupo','producto','ref','uds','pais','mat1','mat2','muelle','transportista','notas','ec','ed','europalets'].forEach(k=>{ const el=document.getElementById('f-'+k); if(el) el.value=''; });
     const sinInt = document.getElementById('f-sin-intercambio'); if(sinInt) sinInt.checked=false;
+    const fAlb = document.getElementById('f-albaran-pedido'); if(fAlb) fAlb.value='';
+    const blAlb = document.getElementById('bloque-albaran-pedido'); if(blAlb) blAlb.style.display='none';
     const fHora = document.getElementById('f-hora'); if(fHora) fHora.value='';
     const fHoraSalida = document.getElementById('f-hora-salida'); if(fHoraSalida) fHoraSalida.value='';
     document.getElementById('f-status').value='pendiente';
@@ -2545,6 +2547,7 @@ async function syncMovimientoDePedido(p){
     cliente: p.grupo||'',
     transportista: p.transportista||'',
     ref: p.ref||p.num||'',
+    albaran: p.albaran||'',
     ec, ed,
     notas: p.notas||'',
     manual: false,
