@@ -9,8 +9,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cargas Pro">
 <meta name="application-name" content="Cargas Pro">
-<link rel="manifest" id="pwa-manifest">
-<link rel="apple-touch-icon" id="apple-icon">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -2941,11 +2941,7 @@ document.querySelectorAll('.modal-scroll').forEach(el => {
   modal.addEventListener('touchend',e=>{const dy=e.changedTouches[0].clientY-startY;modal.style.transform='';isDragging=false;if(dy>100){modalId==='mPedido'?closePedidoModal():closeCargarModal();}});
 });
 
-const iconSVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="80" fill="#0050B3"/><rect y="380" width="512" height="132" rx="0" fill="#0073E6"/><text x="256" y="330" font-size="240" text-anchor="middle" font-family="Arial">🚛</text><text x="256" y="470" font-size="72" text-anchor="middle" font-family="Arial,sans-serif" fill="#ffffff" font-weight="900">CARGAS</text></svg>`;
-const iconB64='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(iconSVG)));
-document.getElementById('apple-icon').href=iconB64;
-const mf={name:"Cargas Pro",short_name:"Cargas",description:"Registro de pedidos y cargas",start_url:location.href,display:"standalone",orientation:"portrait",background_color:"#EBF0FA",theme_color:"#0050B3",lang:"es",icons:[{src:iconB64,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
-document.getElementById('pwa-manifest').href='data:application/json;base64,'+btoa(unescape(encodeURIComponent(JSON.stringify(mf))));
+// Manifest e iconos servidos como archivos estáticos (manifest.json, icon-192.png, icon-512.png)
 
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(!window.matchMedia('(display-mode: standalone)').matches)showInstallBanner();});
@@ -2972,83 +2968,18 @@ if(isIOS&&!isStandalone){
 }
 window.addEventListener('appinstalled',()=>{document.getElementById('pwa-banner')?.remove();toast('🎉 ¡App instalada!');});
 
-// ══ SERVICE WORKER como data URI (compatible con file://) ══
+// ══ SERVICE WORKER ══
 if ('serviceWorker' in navigator) {
-  const swCode = `
-const CACHE = 'cargas-pro-v2';
-const CORE = [
-  'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap',
-  'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
-  'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js'
-];
-
-self.addEventListener('install', e => {
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE).catch(()=>{})));
-});
-
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  const url = e.request.url;
-  if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('chrome-extension:')) return;
-  if (url.includes('firestore.googleapis.com') || url.includes('firebase')) {
-    e.respondWith(fetch(e.request).catch(() => new Response('', {status: 503})));
-    return;
-  }
-  if (url.includes('fonts.g') || url.includes('gstatic.com')) {
-    e.respondWith(
-      caches.match(e.request).then(cached => cached || fetch(e.request).then(r => {
-        const clone = r.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return r;
-      }).catch(()=> new Response('',{status:503})))
-    );
-    return;
-  }
-  e.respondWith(
-    fetch(e.request).then(r => {
-      if (r && r.ok) {
-        const clone = r.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-      }
-      return r;
-    }).catch(() => caches.match(e.request).then(c => c || new Response('Sin conexión',{status:503})))
-  );
-});
-
-self.addEventListener('message', e => {
-  if (e.data === 'SKIP_WAITING') self.skipWaiting();
-  if (e.data === 'CLEAR_CACHE') {
-    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
-      .then(() => e.source.postMessage('CACHE_CLEARED'));
-  }
-});
-  `;
-  try {
-    const swB64 = 'data:application/javascript;base64,' + btoa(unescape(encodeURIComponent(swCode)));
-    navigator.serviceWorker.register(swB64, {scope: './'}).then(reg => {
-      reg.addEventListener('updatefound', () => {
-        const nw = reg.installing;
-        nw.addEventListener('statechange', () => {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-            toast('🔄 Actualización disponible — recarga la app');
-          }
-        });
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+          toast('🔄 Actualización disponible — recarga la app');
+        }
       });
-    }).catch(() => {
-      const swBlob = new Blob([swCode], {type:'application/javascript'});
-      const swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl).catch(()=>{});
     });
-  } catch(e) {}
+  }).catch(err => console.warn('SW no registrado:', err));
 }
 
 // ══ REPARAR APP ══
