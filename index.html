@@ -1038,7 +1038,7 @@ body.ep-active .fab{display:none !important}
       <div class="fsec">Euros</div>
       <div class="fgrid">
         <div class="fg fg-ec"><label>🟢 EC (Cargados)</label><input id="f-ec" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric"></div>
-        <div class="fg fg-ed"><label>🔵 ED (Devueltos)</label><input id="f-ed" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric" oninput="actualizarVisibilidadAlbaran()"></div>
+        <div class="fg fg-ed"><label>🔵 ED (Devueltos)</label><input id="f-ed" type="number" min="0" max="999" maxlength="3" placeholder="0" inputmode="numeric" oninput="actualizarVisibilidadAlbaran()" onchange="actualizarVisibilidadAlbaran()" onkeyup="actualizarVisibilidadAlbaran()"></div>
       </div>
       <div class="fgrid full" style="margin-top:6px">
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2);cursor:pointer;padding:4px 0">
@@ -1563,8 +1563,10 @@ function render() {
   if (activeTab === 'historico') {
     const filtered = pedidos.filter(p => {
       const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
-      return p.status==='cargado' && cargDay(p) && cargDay(p) < hoy
-        && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf);
+      const dc = cargDay(p);
+      const fechaOk = (!fd || (dc && dc >= fd)) && (!fh || (dc && dc <= fh));
+      return p.status==='cargado' && dc && dc < hoy
+        && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf) && fechaOk;
     });
     document.getElementById('countLbl').textContent = filtered.length + ' pedido'+(filtered.length!==1?'s':'');
     if (activeView==='table') { renderTable(filtered); return; }
@@ -1630,7 +1632,7 @@ function cardHtmlHistorico(p) {
     cargaBlock=`<div class="carga-banner">${p.hora?`<div class="cb-item"><div class="cb-label">⏰ Hora carga</div><div class="cb-val">${p.hora}</div></div>`:''} ${p.hora_salida?`<div class="cb-item"><div class="cb-label">🕐 Hora salida</div><div class="cb-val" style="color:var(--status-rev)">${p.hora_salida}</div></div>`:''} ${p.muelle?`<div class="cb-item"><div class="cb-label">🚪 Muelle</div><div class="cb-val">${p.muelle}</div></div>`:''} ${p.transportista?`<div class="cb-item"><div class="cb-label">🚚 Transportista</div><div class="cb-val">${p.transportista}</div></div>`:''}</div>`;
   }
   return `<div class="pedido-card status-${p.status}" style="opacity:.88">
-    <div class="pedido-top">${p.num?`<span class="pedido-num">#${p.num}</span>`:''}<span class="pedido-empresa">${p.grupo||'—'}</span>${fecha?`<span class="pedido-fecha">${fecha}</span>`:''}<span class="status-pill ${pillClass}">${pillLabel}</span><span style="margin-left:auto;font-size:9px;font-family:var(--font-mono);color:#9575CD;background:#EDE7F6;padding:2px 7px;border-radius:10px;letter-spacing:.3px">HISTÓRICO</span></div>
+    <div class="pedido-top">${p.num?`<span class="pedido-num">#${p.num}</span>`:''}<span class="pedido-empresa">${p.grupo||'—'}</span>${fecha?`<span class="pedido-fecha">${fecha}</span>`:''}<span class="status-pill ${pillClass}">${pillLabel}</span><span style="margin-left:auto;display:flex;align-items:center;gap:6px"><span style="font-size:9px;font-family:var(--font-mono);color:#9575CD;background:#EDE7F6;padding:2px 7px;border-radius:10px;letter-spacing:.3px">HISTÓRICO</span><button class="tbl-btn tbl-edit" data-action="edit-hist" data-id="${p.id}" title="Corregir datos" style="font-size:13px;padding:3px 7px">✏️</button></span></div>
     <div class="pedido-body">
       <div class="info-row">
         ${p.producto?`<div class="info-block md"><div class="info-label">📦 Producto</div><span class="tag tag-producto">${p.producto}</span></div>`:''}
@@ -1678,9 +1680,12 @@ function cardHtml(p) {
     cargaBlock=`<div class="carga-banner">${p.hora?`<div class="cb-item"><div class="cb-label">⏰ Hora carga</div><div class="cb-val">${p.hora}</div></div>`:''} ${p.hora_salida?`<div class="cb-item"><div class="cb-label">🕐 Hora salida</div><div class="cb-val" style="color:var(--status-rev)">${p.hora_salida}</div></div>`:''} ${p.muelle?`<div class="cb-item"><div class="cb-label">🚪 Muelle</div><div class="cb-val">${p.muelle}</div></div>`:''} ${p.transportista?`<div class="cb-item"><div class="cb-label">🚚 Transportista</div><div class="cb-val">${p.transportista}</div></div>`:''}</div>`;
   }
   const eid=p.id;
+  const terminarBtn = (p.status==='pendiente'||p.status==='revision')
+    ? `<button class="tbl-btn" data-action="terminar" data-id="${eid}" title="Marcar como terminado" style="background:rgba(0,80,179,0.10);color:var(--sap-blue);border-color:rgba(0,80,179,0.25)">✅</button>`
+    : '';
   const actions=p.status==='cargado'
     ?`<button class="tbl-btn tbl-edit" data-action="edit" data-id="${eid}" title="Editar">✏️</button><button class="tbl-btn tbl-reabrir" data-action="reabrir" data-id="${eid}" title="Reabrir">↩️</button><button class="tbl-btn tbl-del" data-action="del" data-id="${eid}" title="Eliminar">🗑️</button>`
-    :`<button class="tbl-btn tbl-edit" data-action="edit" data-id="${eid}" title="Editar">✏️</button><button class="tbl-btn tbl-cargar" data-action="cargar" data-id="${eid}" title="Cargar">🚛</button><button class="tbl-btn tbl-del" data-action="del" data-id="${eid}" title="Eliminar">🗑️</button>`;
+    :`<button class="tbl-btn tbl-edit" data-action="edit" data-id="${eid}" title="Editar">✏️</button>${terminarBtn}<button class="tbl-btn tbl-cargar" data-action="cargar" data-id="${eid}" title="Cargar">🚛</button><button class="tbl-btn tbl-del" data-action="del" data-id="${eid}" title="Eliminar">🗑️</button>`;
   return `<div class="pedido-card status-${p.status}">
     <div class="pedido-top" style="display:flex;align-items:center;gap:4px">${p.num?`<span class="pedido-num">#${p.num}</span>`:''}<span class="pedido-empresa">${p.grupo||'—'}</span>${fecha?`<span class="pedido-fecha">${fecha}</span>`:''}<span class="status-pill ${pillClass}">${pillLabel}</span><span style="margin-left:auto;display:flex;gap:3px;flex-shrink:0">${actions}</span></div>
     <div class="pedido-body">
@@ -1712,6 +1717,9 @@ function renderTable(filtered) {
   const statusColor={pendiente:'var(--status-pend)',terminado:'var(--sap-blue)',revision:'var(--status-rev)',cargado:'var(--status-load)'};
   const rows=filtered.map(p=>{
     const isCargado = p.status==='cargado';
+    const terminarBtn = (p.status==='pendiente'||p.status==='revision')
+      ? `<button class="tbl-btn" data-action="terminar" data-id="${p.id}" title="Marcar como terminado" style="background:rgba(0,80,179,0.10);color:var(--sap-blue);border-color:rgba(0,80,179,0.25)">✅</button>`
+      : '';
     const cargarBtn = isCargado
       ? `<button class="tbl-btn tbl-reabrir" data-action="reabrir" data-id="${p.id}" title="Reabrir">↩️</button>`
       : `<button class="tbl-btn tbl-cargar" data-action="cargar" data-id="${p.id}" title="Cargar">🚛</button>`;
@@ -1731,6 +1739,7 @@ function renderTable(filtered) {
     ${showStatus?`<td style="color:${statusColor[p.status]||'var(--t2)'};font-weight:700">${statusLabel[p.status]||p.status||'—'}</td>`:''}
     <td class="tbl-actions-cell">
       <button class="tbl-btn tbl-edit" data-action="edit" data-id="${p.id}" title="Editar">✏️</button>
+      ${terminarBtn}
       ${cargarBtn}
       <button class="tbl-btn tbl-del" data-action="del" data-id="${p.id}" title="Eliminar">🗑️</button>
     </td>
@@ -1746,6 +1755,8 @@ document.addEventListener('click', function(e) {
   const action = btn.getAttribute('data-action');
   const id = btn.getAttribute('data-id');
   if (action === 'edit')    openPedidoModal(id);
+  if (action === 'edit-hist') openPedidoModalHist(id);
+  if (action === 'terminar') terminarPedido(id);
   if (action === 'cargar')  openCargarModal(id);
   if (action === 'del')     delPedido(id);
   if (action === 'reabrir') reabrir(id);
@@ -1771,7 +1782,20 @@ function openPedidoModal(idOrNull) {
   document.getElementById('mPedido').classList.add('open');
   setTimeout(()=>{ document.querySelector('#mPedido .modal-scroll').scrollTop=0; },50);
 }
-function closePedidoModal() { document.getElementById('mPedido').classList.remove('open'); editId=null; }
+function closePedidoModal() { document.getElementById('mPedido').classList.remove('open'); editId=null; if(window._histModalCleanup){ window._histModalCleanup(); window._histModalCleanup=null; } }
+function openPedidoModalHist(id) {
+  openPedidoModal(id);
+  // Marcar que es edición histórica para que savePedido no cambie el status
+  document.getElementById('mPedidoTitle').textContent = '✏️ Corregir datos (Histórico)';
+  // Fijar status en "cargado" y deshabilitar el selector
+  const sel = document.getElementById('f-status');
+  sel.value = 'cargado';
+  sel.disabled = true;
+  // Cuando se cierre el modal, rehabilitar el selector
+  const orig = window._histModalCleanup;
+  window._histModalCleanup = () => { sel.disabled = false; if(orig) orig(); };
+}
+
 
 function actualizarVisibilidadAlbaran(){
   const ed = parseInt(document.getElementById('f-ed').value)||0;
@@ -1887,6 +1911,13 @@ function reabrir(id) {
   });
 }
 
+function terminarPedido(id) {
+  const p=pedidos.find(x=>String(x.id)===String(id)); if(!p) return;
+  fbSave({...p, status:'terminado'});
+  toast('✅ Pedido marcado como Terminado');
+}
+
+
 function delPedido(id) {
   const p=pedidos.find(x=>String(x.id)===String(id));
   confirm2('🗑','¿Eliminar pedido?',(p?.grupo||'')+(p?.num?' #'+p.num:''),'Eliminar','',async()=>{
@@ -1974,7 +2005,7 @@ function imprimirTabla() {
     const ts = sm[activeTab];
     return pedidos.filter(p=>{
       const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
-      if(activeTab==='historico') return p.status==='cargado' && cargDay(p) && cargDay(p) < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf);
+      if(activeTab==='historico'){ const dc=cargDay(p); const fOk=(!fd||(dc&&dc>=fd))&&(!fh||(dc&&dc<=fh)); return p.status==='cargado' && dc && dc < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf) && fOk; }
       const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
       let statusOk;
       if(activeTab==='todos') statusOk = !(p.status==='cargado' && cargDay(p) && cargDay(p) < hoy);
