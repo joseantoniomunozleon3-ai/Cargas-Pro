@@ -628,12 +628,41 @@ window.addEventListener('resize',()=>{
 
 async function saveRcvToAgenda(){ const val=gv('rcvBlock');if(!val){toast('Rellena el destinatario primero','err');return} const name=val.split('\n')[0].trim(); await dbAdd(AG,{type:'rcv',name,block:val,savedAt:new Date().toISOString()}); toast('✓ Destinatario guardado','ok');renderRcvQF(); }
 async function saveDrvToAgenda(){ const name=gv('driverName');if(!name){toast('Rellena el conductor primero','err');return} await dbAdd(AG,{type:'drv',name,tractor:gvUp('plateTractor'),trailer:gvUp('plateTrailer'),savedAt:new Date().toISOString()}); toast('✓ Conductor guardado','ok');renderDrvQF(); }
-async function renderAgenda(){ const all=await dbAll(AG); const rcvs=all.filter(x=>x.type==='rcv'); const drvs=all.filter(x=>x.type==='drv'); const xi=`<svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>`; document.getElementById('agRcvList').innerHTML=rcvs.length?rcvs.map(r=>`<div class="ag-item" onclick="fillRcv('${r.id}')"><div class="ag-ico rcv">${r.name.slice(0,2).toUpperCase()}</div><div class="ag-info"><div class="ag-name">${r.name}</div><div class="ag-sub">${[r.city,r.country].filter(Boolean).join(', ')}</div></div><div class="hacts"><div class="hb de" onclick="event.stopPropagation();delAg('${r.id}')">${xi}</div></div></div>`).join(''):'<div class="hist-empty" style="padding:20px 0">Sin destinatarios</div>'; document.getElementById('agDrvList').innerHTML=drvs.length?drvs.map(d=>`<div class="ag-item" onclick="fillDrv('${d.id}')"><div class="ag-ico drv">${d.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div><div class="ag-info"><div class="ag-name">${d.name}</div><div class="ag-sub">${[d.tractor,d.trailer].filter(Boolean).join(' · ')}</div></div><div class="hacts"><div class="hb de" onclick="event.stopPropagation();delAg('${d.id}')">${xi}</div></div></div>`).join(''):'<div class="hist-empty" style="padding:20px 0">Sin conductores</div>'; }
 async function fillRcv(id){const all=await dbAll(AG);const r=all.find(x=>x.id==id);if(!r)return;sv('rcvBlock',r.block);tab('form');toast('✓ Destinatario cargado','ok')}
 async function fillDrv(id){const all=await dbAll(AG);const d=all.find(x=>x.id==id);if(!d)return;sv('driverName',d.name);sv('plateTractor',d.tractor);sv('plateTrailer',d.trailer);tab('form');toast('✓ Conductor cargado','ok')}
 async function delAg(id){await dbDel(AG,id);renderAgenda();renderRcvQF();renderDrvQF();toast('Eliminado','warn')}
-async function renderRcvQF(){ const all=await dbAll(AG); document.getElementById('rcv-qf').innerHTML=all.filter(x=>x.type==='rcv').slice(0,5).map(r=>`<span class="qf-pill" onclick="fillRcv('${r.id}')">↩ ${r.name.split(' ')[0]}</span>`).join(''); }
-async function renderDrvQF(){ const all=await dbAll(AG); document.getElementById('drv-qf').innerHTML=all.filter(x=>x.type==='drv').slice(0,5).map(d=>`<span class="qf-pill" onclick="fillDrv('${d.id}')">↩ ${d.name.split(' ')[0]}</span>`).join(''); }
+async function renderAgenda(){
+    const all=await dbAll(AG);
+    const rcvs=all.filter(x=>x.type==='rcv');
+    const drvs=all.filter(x=>x.type==='drv');
+    const xi=`<svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>`;
+    const rcvEl=document.getElementById('agRcvList');
+    if(!rcvs.length){ rcvEl.innerHTML='<div class="hist-empty" style="padding:20px 0">Sin destinatarios</div>'; }
+    else {
+        rcvEl.innerHTML=rcvs.map(r=>`<div class="ag-item" data-id="${r.id}" data-act="rcv"><div class="ag-ico rcv">${r.name.slice(0,2).toUpperCase()}</div><div class="ag-info"><div class="ag-name">${r.name}</div><div class="ag-sub">${[r.city,r.country].filter(Boolean).join(', ')}</div></div><div class="hacts"><div class="hb de" data-id="${r.id}" data-act="delrcv">${xi}</div></div></div>`).join('');
+        rcvEl.querySelectorAll('[data-act="rcv"]').forEach(el=>el.addEventListener('click',e=>{if(!e.target.closest('[data-act="delrcv"]'))fillRcv(el.dataset.id)}));
+        rcvEl.querySelectorAll('[data-act="delrcv"]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();delAg(el.dataset.id)}));
+    }
+    const drvEl=document.getElementById('agDrvList');
+    if(!drvs.length){ drvEl.innerHTML='<div class="hist-empty" style="padding:20px 0">Sin conductores</div>'; }
+    else {
+        drvEl.innerHTML=drvs.map(d=>`<div class="ag-item" data-id="${d.id}" data-act="drv"><div class="ag-ico drv">${d.name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div><div class="ag-info"><div class="ag-name">${d.name}</div><div class="ag-sub">${[d.tractor,d.trailer].filter(Boolean).join(' · ')}</div></div><div class="hacts"><div class="hb de" data-id="${d.id}" data-act="deldrv">${xi}</div></div></div>`).join('');
+        drvEl.querySelectorAll('[data-act="drv"]').forEach(el=>el.addEventListener('click',e=>{if(!e.target.closest('[data-act="deldrv"]'))fillDrv(el.dataset.id)}));
+        drvEl.querySelectorAll('[data-act="deldrv"]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();delAg(el.dataset.id)}));
+    }
+}
+async function renderRcvQF(){
+    const all=await dbAll(AG);
+    const el=document.getElementById('rcv-qf');
+    el.innerHTML=all.filter(x=>x.type==='rcv').slice(0,5).map(r=>`<span class="qf-pill" data-id="${r.id}">↩ ${r.name.split(' ')[0]}</span>`).join('');
+    el.querySelectorAll('[data-id]').forEach(s=>s.addEventListener('click',()=>fillRcv(s.dataset.id)));
+}
+async function renderDrvQF(){
+    const all=await dbAll(AG);
+    const el=document.getElementById('drv-qf');
+    el.innerHTML=all.filter(x=>x.type==='drv').slice(0,5).map(d=>`<span class="qf-pill" data-id="${d.id}">↩ ${d.name.split(' ')[0]}</span>`).join('');
+    el.querySelectorAll('[data-id]').forEach(s=>s.addEventListener('click',()=>fillDrv(s.dataset.id)));
+}
 
 async function updateHistBadge(){ const n=(await dbAll(STORE)).length; const el=document.getElementById('histBadge'); el.textContent=n; el.style.display=n?'inline':'none'; }
 async function renderHist(){
@@ -648,22 +677,24 @@ async function renderHist(){
         if(q)return(r.docNum+r.rcvBlock+r.placeDelivery).toLowerCase().includes(q);
         return true;
     });
+    const el=document.getElementById('histList');
+    const makeItem=(r,style='')=>{
+        const dt=r.savedAt?new Date(r.savedAt).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
+        return `<div class="hitem" data-id="${r.id}" ${style}><div class="hico">📄</div><div class="hinfo"><div class="hnum">${r.docNum||'Sin N.º'} ${r.tipoDoc==='nacional'?'<span class="hwbadge" style="background:rgba(8,145,178,.1);border-color:rgba(8,145,178,.2);color:var(--teal-l)">NAC</span>':''} ${r.goodsWeight?`<span class="hwbadge">${r.goodsWeight}kg</span>`:''}</div><div class="hsub">${[(r.rcvBlock||'').split('\n')[0],r.placeDelivery].filter(Boolean).join(' → ')}</div></div><div class="hdate">${dt}</div><div class="hacts"><div class="hb lo" data-id="${r.id}" data-act="load" role="button" tabindex="0">⬆</div><div class="hb du" data-id="${r.id}" data-act="dup" role="button" tabindex="0">📋</div><div class="hb pd" data-id="${r.id}" data-act="pdf" role="button" tabindex="0">📄</div><div class="hb de" data-id="${r.id}" data-act="del" role="button" tabindex="0">🗑</div></div></div>`;
+    };
     if(group){
         const grouped={};
-        const groupKey={ dest:(r)=>r.placeDelivery||'Sin destino', carrier:(r)=>(r.carrierBlock||'').split('\n')[0]||'Sin transportista' }[group];
+        const groupKey={dest:(r)=>r.placeDelivery||'Sin destino',carrier:(r)=>(r.carrierBlock||'').split('\n')[0]||'Sin transportista'}[group];
         data.forEach(r=>{const key=groupKey(r);if(!grouped[key])grouped[key]=[];grouped[key].push(r);});
-        const html=Object.entries(grouped).map(([key,items])=>{
-            return `<div style="margin-bottom:16px"><div style="font-weight:600;color:var(--snow)">${key} (${items.length})</div>${items.map(r=>`<div class="hitem" style="margin:4px 0"><div class="hico">📄</div><div class="hinfo"><div class="hnum">${r.docNum||'Sin N.º'} ${r.tipoDoc==='nacional'?'<span class="hwbadge" style="background:rgba(8,145,178,.1);border-color:rgba(8,145,178,.2);color:var(--teal-l)">NAC</span>':''}</div><div class="hsub">${[(r.rcvBlock||'').split('\n')[0],r.placeDelivery].filter(Boolean).join(' → ')}</div></div><div class="hdate">${r.savedAt?new Date(r.savedAt).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—'}</div><div class="hacts"><div class="hb lo" role="button" tabindex="0" aria-label="Cargar documento" onclick="loadRec('${r.id}')">⬆</div><div class="hb du" role="button" tabindex="0" aria-label="Duplicar documento" onclick="dupRec('${r.id}')">📋</div><div class="hb pd" role="button" tabindex="0" aria-label="Regenerar PDF" onclick="regenPDF('${r.id}')">📄</div><div class="hb de" role="button" tabindex="0" aria-label="Eliminar documento" onclick="delRec('${r.id}')">🗑</div></div></div>`).join('')}</div>`;
-        }).join('');
-        document.getElementById('histList').innerHTML=html||'<div class="hist-empty">Sin resultados</div>';
+        el.innerHTML=Object.entries(grouped).map(([key,items])=>`<div style="margin-bottom:16px"><div style="font-weight:600;color:var(--snow)">${key} (${items.length})</div>${items.map(r=>makeItem(r,'style="margin:4px 0"')).join('')}</div>`).join('')||'<div class="hist-empty">Sin resultados</div>';
     } else {
-        const el=document.getElementById('histList');
-        if(!data.length){ el.innerHTML=`<div class="hist-empty">${all.length?'Sin resultados':'Aún no hay documentos.<br>Genera tu primer documento.'}</div>`; return; }
-        el.innerHTML=data.map(r=>{
-            const dt=r.savedAt?new Date(r.savedAt).toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
-            return`<div class="hitem"><div class="hico">📄</div><div class="hinfo"><div class="hnum">${r.docNum||'Sin N.º'} ${r.tipoDoc==='nacional'?'<span class="hwbadge" style="background:rgba(8,145,178,.1);border-color:rgba(8,145,178,.2);color:var(--teal-l)">NAC</span>':''} ${r.goodsWeight?`<span class="hwbadge">${r.goodsWeight}kg</span>`:''}</div><div class="hsub">${[(r.rcvBlock||'').split('\n')[0],r.placeDelivery].filter(Boolean).join(' → ')}</div></div><div class="hdate">${dt}</div><div class="hacts"><div class="hb lo" role="button" tabindex="0" aria-label="Cargar documento" onclick="loadRec('${r.id}')">⬆</div><div class="hb du" role="button" tabindex="0" aria-label="Duplicar documento" onclick="dupRec('${r.id}')">📋</div><div class="hb pd" role="button" tabindex="0" aria-label="Regenerar PDF" onclick="regenPDF('${r.id}')">📄</div><div class="hb de" role="button" tabindex="0" aria-label="Eliminar documento" onclick="delRec('${r.id}')">🗑</div></div></div>`;
-        }).join('');
+        if(!data.length){ el.innerHTML=`<div class="hist-empty">${all.length?'Sin resultados':'Aún no hay documentos.<br>Genera tu primer documento.'}</div>`; }
+        else { el.innerHTML=data.map(r=>makeItem(r)).join(''); }
     }
+    el.querySelectorAll('[data-act="load"]').forEach(b=>b.addEventListener('click',()=>loadRec(b.dataset.id)));
+    el.querySelectorAll('[data-act="dup"]').forEach(b=>b.addEventListener('click',()=>dupRec(b.dataset.id)));
+    el.querySelectorAll('[data-act="pdf"]').forEach(b=>b.addEventListener('click',()=>regenPDF(b.dataset.id)));
+    el.querySelectorAll('[data-act="del"]').forEach(b=>b.addEventListener('click',()=>delRec(b.dataset.id)));
     const allMonth=all.filter(r=>{try{const d=new Date(r.savedAt);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}catch{return false}});
     const totalKg=all.reduce((s,r)=>s+(parseFloat(r.goodsWeight)||0),0);
     const monthKg=allMonth.reduce((s,r)=>s+(parseFloat(r.goodsWeight)||0),0);
@@ -828,7 +859,10 @@ async function renderTemplates(){
     if(!all.length){ el.innerHTML='<div class="hist-empty">Sin plantillas</div>'; return; }
     const pencil=`<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>`;
     const trash=`<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>`;
-    el.innerHTML=all.map(t=>`<div class="ag-item"><div class="ag-ico rcv">${(t.templateName||'TPL').slice(0,2).toUpperCase()}</div><div class="ag-info" onclick="loadTemplate('${t.id}')"><div class="ag-name">${t.templateName||'Sin nombre'}</div><div class="ag-sub">Toca para cargar</div></div><div class="hacts"><div class="hb" onclick="event.stopPropagation();renameTemplate('${t.id}')" title="Renombrar">${pencil}</div><div class="hb de" onclick="event.stopPropagation();deleteTemplate('${t.id}')" title="Eliminar">${trash}</div></div></div>`).join('');
+    el.innerHTML=all.map(t=>`<div class="ag-item"><div class="ag-ico rcv">${(t.templateName||'TPL').slice(0,2).toUpperCase()}</div><div class="ag-info" data-id="${t.id}" data-act="load"><div class="ag-name">${t.templateName||'Sin nombre'}</div><div class="ag-sub">Toca para cargar</div></div><div class="hacts"><div class="hb" data-id="${t.id}" data-act="rename" title="Renombrar">${pencil}</div><div class="hb de" data-id="${t.id}" data-act="del" title="Eliminar">${trash}</div></div></div>`).join('');
+    el.querySelectorAll('[data-act="load"]').forEach(b=>b.addEventListener('click',()=>loadTemplate(b.dataset.id)));
+    el.querySelectorAll('[data-act="rename"]').forEach(b=>b.addEventListener('click',()=>renameTemplate(b.dataset.id)));
+    el.querySelectorAll('[data-act="del"]').forEach(b=>b.addEventListener('click',()=>deleteTemplate(b.dataset.id)));
 }
 
 async function generateCMR(){
