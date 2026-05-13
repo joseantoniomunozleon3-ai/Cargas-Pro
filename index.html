@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8"/>
@@ -370,7 +370,7 @@ function tab(n){
 
 function toast(msg,type='',dur=3200){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+type; requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('on'))); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),dur); }
 const showOv=(v,txt='GENERANDO PDF…')=>{ document.getElementById('ov').classList.toggle('on',v); document.getElementById('ovTxt').textContent=txt; };
-function showBS(title,bodyHTML,actions=[]){ document.getElementById('bsTitle').textContent=title; document.getElementById('bsBody').innerHTML=bodyHTML; const ac=document.getElementById('bsActs'); ac.innerHTML=actions.map((a,i)=>`<button class="bsa ${a.cls||''}" data-bsi="${i}">${a.label}</button>`).join(''); ac.querySelectorAll('button[data-bsi]').forEach(btn=>{ const a=actions[parseInt(btn.dataset.bsi)]; btn.addEventListener('click',()=>{ new Function(a.fn)(); }); }); document.getElementById('bs-bg').classList.add('on'); }
+function showBS(title,bodyHTML,actions=[]){ document.getElementById('bsTitle').textContent=title; document.getElementById('bsBody').innerHTML=bodyHTML; const ac=document.getElementById('bsActs'); ac.innerHTML=actions.map((a,i)=>`<button class="bsa ${a.cls||''}" data-bsi="${i}">${a.label}</button>`).join(''); ac.querySelectorAll('button[data-bsi]').forEach(btn=>{ const a=actions[parseInt(btn.dataset.bsi)]; btn.addEventListener('click',()=>{ if(typeof a.fn==='function') a.fn(); else new Function(a.fn)(); }); }); document.getElementById('bs-bg').classList.add('on'); }
 function closeBS(){document.getElementById('bs-bg').classList.remove('on')}
 document.getElementById('bs-bg')?.addEventListener('click',e=>{if(e.target===e.currentTarget)closeBS()});
 
@@ -706,7 +706,7 @@ async function renderHist(){
 async function loadRec(id){ const all=await dbAll(STORE); const r=all.find(x=>x.id==id); if(!r)return; fill(r); clearSig();clearSigSender(); tab('form'); toast('✓ Documento cargado','ok'); }
 async function dupRec(id){ const all=await dbAll(STORE); const r=all.find(x=>x.id==id); if(!r)return; const d={...r}; delete d.id; d.docDate=new Date().toISOString().split('T')[0]; d.savedAt=new Date().toISOString(); fill(d); sv('docNum',genDocNum()); clearSig();clearSigSender(); tab('form'); toast('✓ Duplicado — cambia el albarán para actualizar el N.º','warn',5000); }
 async function regenPDF(id){ const all=await dbAll(STORE); const r=all.find(x=>x.id==id); if(!r)return; showOv(true); const st=setTimeout(()=>{showOv(false);toast('⚠ Tiempo agotado','err',5000)},25000); try{buildPDF(r,st)}catch(e){clearTimeout(st);showOv(false);toast('⚠ Error: '+e.message,'err',5000)} }
-function delRec(id){ showBS('Eliminar Documento','Este registro se eliminará permanentemente.',[{label:'Cancelar',cls:'cancel',fn:'closeBS()'},{label:'Eliminar',cls:'danger',fn:`_delOk('${id}')`}]); }
+function delRec(id){ showBS('Eliminar Documento','Este registro se eliminará permanentemente.',[{label:'Cancelar',cls:'cancel',fn:closeBS},{label:'Eliminar',cls:'danger',fn:()=>_delOk(id)}]); }
 async function _delOk(id){ closeBS(); await dbDel(STORE,id); await renderHist(); await updateHistBadge(); toast('Eliminado','warn'); }
 
 async function exportDB(){
@@ -757,8 +757,8 @@ async function importDB(e) {
              </ul>
              <p style="margin-top:10px;color:var(--dim);font-size:.78rem">Los datos existentes no se eliminarán. Se añadirán como nuevos registros.</p>`,
             [
-                {label:'Cancelar', cls:'cancel', fn:'closeBS()'},
-                {label:'Importar', cls:'ok', fn:`_doImport(${JSON.stringify(JSON.stringify({d:docsArr,a:agendaArr,p:plantillasArr}))})`}
+                {label:'Cancelar', cls:'cancel', fn:closeBS},
+                {label:'Importar', cls:'ok', fn:()=>_doImport()}
             ]
         );
         window._pendingImport = {d: docsArr, a: agendaArr, p: plantillasArr};
@@ -768,7 +768,7 @@ async function importDB(e) {
     e.target.value = '';
 }
 
-async function _doImport(jsonStr) {
+async function _doImport() {
     closeBS();
     const data = window._pendingImport;
     if (!data) return;
@@ -790,7 +790,7 @@ async function updateBackupStats() {
 }
 
 
-function confirmClear(){ showBS('Vaciar Base de Datos','Se eliminarán TODOS los documentos.',[{label:'Cancelar',cls:'cancel',fn:'closeBS()'},{label:'Vaciar BD',cls:'danger',fn:'_clearOk()'}]); }
+function confirmClear(){ showBS('Vaciar Base de Datos','Se eliminarán TODOS los documentos.',[{label:'Cancelar',cls:'cancel',fn:closeBS},{label:'Vaciar BD',cls:'danger',fn:_clearOk}]); }
 async function _clearOk(){ closeBS(); await dbClear(STORE); await renderHist(); await updateHistBadge(); toast('BD vaciada','warn'); }
 
 let succId=0;
@@ -820,9 +820,9 @@ async function saveAsTemplate(){
             'Nombre duplicado',
             `<p>Ya existe una plantilla llamada <b>${existing.templateName}</b>.</p><p style="margin-top:8px;color:var(--dim);font-size:.78rem">¿Qué quieres hacer?</p>`,
             [
-                {label:'Cancelar',cls:'cancel',fn:'closeBS()'},
-                {label:'Renombrar',cls:'ok',fn:'_tplRename()'},
-                {label:'Sobreescribir',cls:'danger',fn:`_tplOverwrite('${existing.id}')`}
+                {label:'Cancelar',cls:'cancel',fn:closeBS},
+                {label:'Renombrar',cls:'ok',fn:_tplRename},
+                {label:'Sobreescribir',cls:'danger',fn:()=>_tplOverwrite(existing.id)}
             ]
         );
         window._pendingTplData=data;
@@ -852,7 +852,7 @@ async function _tplRename(){
 }
 async function loadTemplate(id){ const all=await dbAll(TPL); const tpl=all.find(x=>x.id==id); if(!tpl)return; fill(tpl); sv('docNum',genDocNum()); sv('docDate',new Date().toISOString().split('T')[0]); tab('form'); toast('✓ Plantilla cargada','ok'); }
 async function renameTemplate(id){ const all=await dbAll(TPL); const tpl=all.find(x=>x.id==id); if(!tpl)return; const newName=prompt('Nuevo nombre:',tpl.templateName||''); if(!newName||newName.trim()===tpl.templateName)return; const dup=all.find(t=>t.id!=id&&(t.templateName||'').trim().toLowerCase()===newName.trim().toLowerCase()); if(dup){toast('Ese nombre ya existe','err',4000);return;} tpl.templateName=newName.trim(); await dbDel(TPL,id); await dbAdd(TPL,tpl); renderTemplates(); toast('✓ Plantilla renombrada','ok'); }
-function deleteTemplate(id){ showBS('Eliminar Plantilla','¿Seguro que quieres eliminar esta plantilla?',[{label:'Cancelar',cls:'cancel',fn:'closeBS()'},{label:'Eliminar',cls:'danger',fn:`_delTpl('${id}')`}]); }
+function deleteTemplate(id){ showBS('Eliminar Plantilla','¿Seguro que quieres eliminar esta plantilla?',[{label:'Cancelar',cls:'cancel',fn:closeBS},{label:'Eliminar',cls:'danger',fn:()=>_delTpl(id)}]); }
 async function _delTpl(id){ closeBS(); await dbDel(TPL,id); renderTemplates(); toast('Plantilla eliminada','warn'); }
 async function renderTemplates(){
     const all=await dbAll(TPL); const el=document.getElementById('tmplList');
@@ -875,7 +875,7 @@ async function generateCMR(){
     if(missing.length){
         showBS('Campos Obligatorios',
             '<p style="margin-bottom:10px">Faltan los siguientes campos:</p><ul style="padding-left:16px;line-height:2">'+missing.map(f=>'<li><b>'+f+'</b></li>').join('')+'</ul>',
-            [{label:'Entendido',cls:'ok',fn:'closeBS()'}]);
+            [{label:'Entendido',cls:'ok',fn:closeBS}]);
         return;
     }
     if(typeof pdfMake==='undefined'){toast('⚠ pdfmake no cargado','err',5000);return;}
@@ -1140,8 +1140,8 @@ window._appInit=async function(){
             `<p>Se encontró un borrador guardado <b>${ageStr}</b>.</p>
              <p style="margin-top:8px;color:var(--dim);font-size:.78rem">Documento: <b>${draft.docNum||'Sin número'}</b>${draft.rcvBlock ? ' → ' + draft.rcvBlock.split('\n')[0] : ''}</p>`,
             [
-                {label: 'Descartar', cls: 'cancel', fn: '_discardDraft()'},
-                {label: 'Restaurar borrador', cls: 'ok', fn: '_restoreDraft()'}
+                {label: 'Descartar', cls: 'cancel', fn: _discardDraft},
+                {label: 'Restaurar borrador', cls: 'ok', fn: _restoreDraft}
             ]
         );
     }
