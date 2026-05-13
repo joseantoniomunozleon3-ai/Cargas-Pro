@@ -370,7 +370,7 @@ function tab(n){
 
 function toast(msg,type='',dur=3200){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+type; requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('on'))); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),dur); }
 const showOv=(v,txt='GENERANDO PDF…')=>{ document.getElementById('ov').classList.toggle('on',v); document.getElementById('ovTxt').textContent=txt; };
-function showBS(title,bodyHTML,actions=[]){ document.getElementById('bsTitle').textContent=title; document.getElementById('bsBody').innerHTML=bodyHTML; const ac=document.getElementById('bsActs'); ac.innerHTML=actions.map(a=>`<button class="bsa ${a.cls||''}" onclick="${a.fn}">${a.label}</button>`).join(''); document.getElementById('bs-bg').classList.add('on'); }
+function showBS(title,bodyHTML,actions=[]){ document.getElementById('bsTitle').textContent=title; document.getElementById('bsBody').innerHTML=bodyHTML; const ac=document.getElementById('bsActs'); ac.innerHTML=actions.map((a,i)=>`<button class="bsa ${a.cls||''}" data-bsi="${i}">${a.label}</button>`).join(''); ac.querySelectorAll('button[data-bsi]').forEach(btn=>{ const a=actions[parseInt(btn.dataset.bsi)]; btn.addEventListener('click',()=>{ new Function(a.fn)(); }); }); document.getElementById('bs-bg').classList.add('on'); }
 function closeBS(){document.getElementById('bs-bg').classList.remove('on')}
 document.getElementById('bs-bg')?.addEventListener('click',e=>{if(e.target===e.currentTarget)closeBS()});
 
