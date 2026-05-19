@@ -554,6 +554,24 @@ tr:hover td{background:rgba(0,80,179,0.05)}
 }
 .modal-bg.open .modal{transform:translateY(0)}
 .modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:14px auto 0;flex-shrink:0}
+
+/* ══ MODAL DESKTOP — centrado, no bottom sheet ══ */
+@media(min-width:700px){
+  .modal-bg{align-items:center;padding:24px;}
+  .modal{
+    border-radius:16px;
+    border-top:4px solid #0050B3;
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+    max-width:720px;
+    max-height:90vh;
+    transform:scale(0.96) translateY(0);
+    box-shadow:0 24px 80px rgba(0,30,80,0.35),0 8px 24px rgba(0,30,80,0.18);
+  }
+  .modal-bg.open .modal{transform:scale(1) translateY(0);}
+  .modal-handle{display:none;}
+}
 .modal-header{padding:14px 22px 0;flex-shrink:0;border-bottom:1px solid var(--border);padding-bottom:14px;
   background:linear-gradient(135deg,rgba(255,255,255,0.03) 0%,transparent 100%);}
 .modal-title{font-family:var(--font-display);font-size:19px;font-weight:800;color:var(--t1);letter-spacing:-.2px}
