@@ -678,7 +678,42 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 }
 .mbtn-cargar:hover{box-shadow:0 6px 18px rgba(21,122,53,0.45)}
 
-/* ══ TOAST — Enterprise ══ */
+/* ══ LÍNEAS DE PEDIDO ══ */
+.linea-pedido{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent);
+  border-radius:var(--r-sm);
+  padding:12px 12px 10px;
+  margin-bottom:8px;
+  position:relative;
+  animation:fadeUp .15s ease both;
+}
+.linea-header{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:10px;
+}
+.linea-num{
+  font-family:var(--font-mono);font-size:10px;font-weight:700;
+  background:linear-gradient(135deg,#1C1F26,#2A2E38);
+  color:#F5A623;padding:2px 9px;border-radius:3px;letter-spacing:.3px;
+  flex-shrink:0;
+}
+.linea-del{
+  margin-left:auto;
+  background:none;border:none;cursor:pointer;
+  color:var(--t4);font-size:16px;padding:2px 6px;
+  border-radius:var(--r-xs);transition:all .13s;
+  line-height:1;
+}
+.linea-del:hover{background:rgba(200,0,14,0.12);color:var(--dhl-red);}
+/* Siempre columna única dentro de cada línea — caben bien en móvil */
+.linea-pedido .fgrid{grid-template-columns:1fr !important;gap:8px}
+.linea-pedido .fg input{font-size:14px;min-height:44px;padding:10px 14px}
+/* En desktop se pueden poner 2 columnas */
+@media(min-width:600px){
+  .linea-pedido .fgrid{grid-template-columns:1fr 1fr !important}
+}
 .toast{
   position:fixed;top:72px;left:50%;
   transform:translateX(-50%) translateY(-10px);
@@ -1095,6 +1130,21 @@ body.ep-active .fab{display:none !important}
           <label>📋 Nº Albarán</label>
           <input id="f-albaran-pedido" placeholder="Ej: A26/1765" autocomplete="off" style="font-family:var(--font-mono);letter-spacing:.5px">
         </div>
+      </div>
+      <!-- ══ LÍNEAS DE PEDIDO (colapsable) ══ -->
+      <div class="fsec fsec-toggle" id="fsec-aduana" onclick="toggleAduana()" style="cursor:pointer;user-select:none;justify-content:space-between">
+        <span>&#9776; LÍNEAS DE PEDIDO</span>
+        <span id="aduana-arrow" style="font-size:12px;transition:transform .2s;color:#F5A623">&#9660;</span>
+      </div>
+      <div id="bloque-aduana" style="display:none">
+        <!-- datalists compartidos para memoria -->
+        <datalist id="dl-marcas"></datalist>
+        <datalist id="dl-bultos"></datalist>
+        <datalist id="dl-embalaje"></datalist>
+        <datalist id="dl-naturaleza"></datalist>
+        <datalist id="dl-nestadistico"></datalist>
+        <div id="lineas-container"></div>
+        <button type="button" onclick="addLineaPedido()" style="margin-top:8px;width:100%;padding:10px;border:2px dashed var(--border2);border-radius:var(--r-sm);background:var(--surface2);color:var(--t2);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.4px;text-transform:uppercase;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--t2)'">＋ Añadir línea</button>
       </div>
       <div class="fsec">Estado y notas</div>
       <div class="fgrid">
@@ -1565,6 +1615,20 @@ function updateLists() {
   const baseT = ['VIGAR','TRANSMORO','CASTILLO','CARRION','ISABEL ALONSO','BLÁZQUEZ','SERVICOM','DHL'];
   const allT = [...new Set([...baseT,...trans])];
   ['dl-trans','dl-trans2'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=allT.map(t=>`<option value="${t}">`).join(''); });
+
+  // ── Datalists datos aduaneros (memoria automática desde lineas) ──
+  const todasLineas = pedidos.flatMap(p => p.lineas||[]);
+  const marcasArr   = [...new Set(todasLineas.map(l=>l.marcas).filter(Boolean))];
+  const bultosArr   = [...new Set(todasLineas.map(l=>l.bultos).filter(Boolean))];
+  const embalajeArr = [...new Set(todasLineas.map(l=>l.embalaje).filter(Boolean))];
+  const naturArr    = [...new Set(todasLineas.map(l=>l.naturaleza).filter(Boolean))];
+  const nestArr     = [...new Set(todasLineas.map(l=>l.nestadistico).filter(Boolean))];
+  const _setDl = (id, arr) => { const el=document.getElementById(id); if(el) el.innerHTML=arr.map(v=>`<option value="${v}">`).join(''); };
+  _setDl('dl-marcas', marcasArr);
+  _setDl('dl-bultos', bultosArr);
+  _setDl('dl-embalaje', [...new Set(['Palet','Caja','Bolsa','Bandeja','Granel',...embalajeArr])]);
+  _setDl('dl-naturaleza', naturArr);
+  _setDl('dl-nestadistico', nestArr);
   const gs=document.getElementById('fGrupo'); const gv=gs.value;
   gs.innerHTML='<option value="">Todos los clientes</option>'+grupos.map(g=>`<option value="${g}"${g===gv?' selected':''}>${g}</option>`).join('');
   const ms=document.getElementById('fMuelle'); const mv=ms.value;
@@ -1814,6 +1878,16 @@ function openPedidoModal(idOrNull) {
     const fid = k==='hora_salida'?'f-hora-salida':'f-'+k;
     const el = document.getElementById(fid); if(el) el.value = p?.[k]||'';
   });
+  // Cargar líneas de pedido
+  const lineas = p?.lineas||[];
+  cargarLineasPedido(lineas);
+  if(lineas.length > 0){
+    const bl=document.getElementById('bloque-aduana'); if(bl) bl.style.display='';
+    const ar=document.getElementById('aduana-arrow'); if(ar) ar.style.transform='rotate(180deg)';
+  } else {
+    const bl=document.getElementById('bloque-aduana'); if(bl) bl.style.display='none';
+    const ar=document.getElementById('aduana-arrow'); if(ar) ar.style.transform='';
+  }
   document.getElementById('f-status').value = p?.status||'pendiente';
   document.getElementById('f-fecha').value  = p?.fecha||new Date().toISOString().slice(0,10);
   // Restaurar checkbox "Sin intercambio" y el campo albarán
@@ -1849,6 +1923,84 @@ function actualizarVisibilidadAlbaran(){
 }
 window.actualizarVisibilidadAlbaran = actualizarVisibilidadAlbaran;
 
+function toggleAduana() {
+  const bloque = document.getElementById('bloque-aduana');
+  const arrow  = document.getElementById('aduana-arrow');
+  const open   = bloque.style.display === '';
+  bloque.style.display = open ? 'none' : '';
+  arrow.style.transform = open ? '' : 'rotate(180deg)';
+  // Si se abre vacío, añadir la primera línea automáticamente
+  if(!open && document.getElementById('lineas-container').children.length === 0){
+    addLineaPedido();
+  }
+}
+window.toggleAduana = toggleAduana;
+
+// ── Sistema de líneas de pedido ──
+let _lineaIdx = 0;
+
+function addLineaPedido(datos) {
+  const idx = _lineaIdx++;
+  const container = document.getElementById('lineas-container');
+  const num = container.children.length + 1;
+  const v = datos || {};
+  const div = document.createElement('div');
+  div.className = 'linea-pedido';
+  div.dataset.idx = idx;
+  div.innerHTML = `
+    <div class="linea-header">
+      <span class="linea-num">LÍNEA ${num}</span>
+      <button type="button" class="linea-del" onclick="removeLineaPedido(this)" title="Eliminar línea">✕</button>
+    </div>
+    <div class="fgrid">
+      <div class="fg"><label>Marcas</label><input class="ln-marcas" placeholder="EURO, ABC..." list="dl-marcas" autocomplete="off" value="${_esc(v.marcas)}"></div>
+      <div class="fg"><label>Bultos</label><input class="ln-bultos" placeholder="Nº bultos" inputmode="numeric" list="dl-bultos" autocomplete="off" value="${_esc(v.bultos)}"></div>
+    </div>
+    <div class="fgrid" style="margin-top:8px">
+      <div class="fg"><label>Clase embalaje</label><input class="ln-embalaje" placeholder="Palet, Caja..." list="dl-embalaje" autocomplete="off" value="${_esc(v.embalaje)}"></div>
+      <div class="fg"><label>Naturaleza mercancía</label><input class="ln-naturaleza" placeholder="Fruta fresca..." list="dl-naturaleza" autocomplete="off" value="${_esc(v.naturaleza)}"></div>
+    </div>
+    <div class="fgrid full" style="margin-top:8px">
+      <div class="fg"><label>N. Estadístico</label><input class="ln-nestadistico" placeholder="0805100090" list="dl-nestadistico" autocomplete="off" style="font-family:var(--font-mono);letter-spacing:.5px" value="${_esc(v.nestadistico)}"></div>
+    </div>`;
+  container.appendChild(div);
+  _renumerarLineas();
+}
+
+function removeLineaPedido(btn) {
+  btn.closest('.linea-pedido').remove();
+  _renumerarLineas();
+}
+
+function _renumerarLineas() {
+  document.querySelectorAll('#lineas-container .linea-pedido').forEach((el, i) => {
+    const span = el.querySelector('.linea-num');
+    if(span) span.textContent = 'LÍNEA ' + (i+1);
+  });
+}
+
+function _esc(v){ return (v||'').replace(/"/g,'&quot;'); }
+
+function getLineasPedido() {
+  return [...document.querySelectorAll('#lineas-container .linea-pedido')].map(el => ({
+    marcas:      el.querySelector('.ln-marcas')?.value.trim()||'',
+    bultos:      el.querySelector('.ln-bultos')?.value.trim()||'',
+    embalaje:    el.querySelector('.ln-embalaje')?.value.trim()||'',
+    naturaleza:  el.querySelector('.ln-naturaleza')?.value.trim()||'',
+    nestadistico:el.querySelector('.ln-nestadistico')?.value.trim()||'',
+  })).filter(l => l.marcas||l.bultos||l.embalaje||l.naturaleza||l.nestadistico);
+}
+
+function cargarLineasPedido(lineas) {
+  const container = document.getElementById('lineas-container');
+  container.innerHTML = '';
+  _lineaIdx = 0;
+  (lineas||[]).forEach(l => addLineaPedido(l));
+}
+
+window.addLineaPedido = addLineaPedido;
+window.removeLineaPedido = removeLineaPedido;
+
 async function savePedido() {
   const get = id => document.getElementById(id).value.trim();
   const id = editId || String(Date.now() + Math.floor(Math.random()*1000));
@@ -1866,6 +2018,7 @@ async function savePedido() {
     notas:get('f-notas'),
     ec: parseInt(get('f-ec'))||0,
     ed: parseInt(get('f-ed'))||0,
+    lineas: getLineasPedido(),
   };
   if(!p.grupo){ toast('⚠️ Indica el cliente'); return; }
   const sinIntercambio = document.getElementById('f-sin-intercambio').checked;
@@ -1884,6 +2037,7 @@ async function savePedido() {
 function limpiarPedidoModal() {
   confirm2('🗑','¿Limpiar formulario?','Se borrarán todos los campos','Limpiar','',()=>{
     ['num','grupo','producto','ref','uds','pais','mat1','mat2','muelle','transportista','notas','ec','ed','europalets'].forEach(k=>{ const el=document.getElementById('f-'+k); if(el) el.value=''; });
+    cargarLineasPedido([]);
     const sinInt = document.getElementById('f-sin-intercambio'); if(sinInt) sinInt.checked=false;
     const fAlb = document.getElementById('f-albaran-pedido'); if(fAlb) fAlb.value='';
     const blAlb = document.getElementById('bloque-albaran-pedido'); if(blAlb) blAlb.style.display='none';
