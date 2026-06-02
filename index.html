@@ -851,7 +851,7 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 .ep-header{
   background:linear-gradient(135deg,var(--dhl-dark) 0%,var(--dhl-dark2) 100%);
   padding:16px 18px 14px 18px;
-  border-bottom:3px solid var(--dhl-yellow);position:sticky;top:0;z-index:50;
+  border-bottom:3px solid var(--dhl-yellow);position:sticky;top:0;z-index:70;
   box-shadow:0 4px 16px rgba(10,14,30,0.25);
 }
 .ep-h1{font-family:var(--font-display);font-size:19px;font-weight:800;color:#fff;letter-spacing:-.3px}
@@ -892,7 +892,7 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 .ep-btn:hover{background:var(--surface3);transform:translateY(-1px)}
 .ep-btn-primary{background:linear-gradient(135deg,var(--dhl-yellow) 0%,var(--dhl-yellow-dark) 100%);color:var(--dhl-dark);border-color:var(--dhl-yellow-dark);box-shadow:0 2px 8px rgba(245,196,0,.25)}
 .ep-btn-blue{background:linear-gradient(135deg,var(--sap-blue) 0%,#0055CC 100%);color:#fff;border-color:var(--sap-blue);box-shadow:0 2px 8px rgba(10,110,250,.25)}
-.ep-list{padding:0 12px}
+.ep-list{padding:0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .ep-mov-card{
   background:var(--surface);border:1px solid var(--border);border-radius:8px;
   padding:10px 12px;margin-bottom:8px;
@@ -3915,13 +3915,13 @@ function _buildEpTable(data){
       <td style="text-align:center;color:${totSaldo>0?'#2E7D32':totSaldo<0?'#C62828':'#333'}">${totSaldo>0?'+':''}${totSaldo}</td>
       <td></td>
     </tr>`;
-    return `<table>
+    return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table style="min-width:720px">
       <thead><tr>
         <th>Fecha</th><th>Tipo</th><th>Cliente</th><th>Referencia</th><th>Albarán</th><th>Transportista</th>
         <th style="text-align:center">EC</th><th style="text-align:center">ED</th>
         <th style="text-align:center">Saldo</th><th style="text-align:center">Acum. Trans.</th>
       </tr></thead>
-      <tbody>${rows}${totalRow}</tbody></table>`;
+      <tbody>${rows}${totalRow}</tbody></table></div>`;
   } else {
     // Agrupado por transportista o cliente
     const key = epActiveTab==='trans' ? 'transportista' : 'cliente';
@@ -3959,7 +3959,7 @@ function _buildEpTable(data){
       <td style="text-align:center;color:${totSaldo>0?'#2E7D32':totSaldo<0?'#C62828':'#333'}">${totSaldo>0?'+':''}${totSaldo}</td>
       <td colspan="2"></td>
     </tr>`;
-    return `<table>
+    return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table style="min-width:520px">
       <thead><tr>
         <th>${key==='transportista'?'Transportista':'Cliente'}</th>
         <th style="text-align:center">Movs</th>
@@ -3969,7 +3969,7 @@ function _buildEpTable(data){
         <th>Estado</th>
         <th>Último mov.</th>
       </tr></thead>
-      <tbody>${rows}${totalRow}</tbody></table>`;
+      <tbody>${rows}${totalRow}</tbody></table></div>`;
   }
 }
 
