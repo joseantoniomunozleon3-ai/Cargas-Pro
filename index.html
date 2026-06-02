@@ -843,7 +843,7 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 .ep-screen{display:none;background:var(--bg)}
 .ep-screen.active{
   display:block;
-  position:fixed; top:0; left:0; right:0; bottom:0;
+  position:fixed; top:62px; left:0; right:0; bottom:0;
   overflow-y:auto; -webkit-overflow-scrolling:touch;
   padding-bottom:100px;
   z-index:40;
@@ -1948,31 +1948,7 @@ tr:hover td {
   </div>
 </header>
 
-<!-- TABS -->
-<div class="tabs-wrap">
-  <button class="tab active" id="tab-pendientes" onclick="setTab('pendientes')">
-    📦 Confección <span class="tab-badge" id="b-pend">0</span>
-  </button>
-  <button class="tab" id="tab-terminado" onclick="setTab('terminado')">
-    ✅ Terminado <span class="tab-badge" id="b-term">0</span>
-  </button>
-  <button class="tab" id="tab-todos" onclick="setTab('todos')">
-    📋 Todos <span class="tab-badge" id="b-todos">0</span>
-  </button>
-  <button class="tab" id="tab-cargados" onclick="setTab('cargados')">
-    🚛 Cargados <span class="tab-badge" id="b-carg">0</span>
-  </button>
-  <button class="tab" id="tab-historico" onclick="setTab('historico')">
-    🕐 Histórico <span class="tab-badge" id="b-hist">0</span>
-  </button>
-</div>
 
-<!-- STATS -->
-<div class="stats-row">
-  <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-lbl">Total</div></div>
-  <div class="stat"><div class="stat-num" id="s-pend">0</div><div class="stat-lbl">Confección</div></div>
-  <div class="stat"><div class="stat-num" id="s-term">0</div><div class="stat-lbl">Terminado</div></div>
-  <div class="stat"><div class="stat-num" id="s-carg">0</div><div class="stat-lbl">Cargados</div></div></div>
 
 <!-- SEARCH -->
 <div class="search-row">
@@ -2474,8 +2450,6 @@ async function fbDelete(id) {
 
 function setTab(t) {
   activeTab = t;
-  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-'+t).classList.add('active');
   // Actualizar nav bottom
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-pend').classList.toggle('active', t==='pendientes');
@@ -2606,15 +2580,7 @@ function updateStats() {
   const hist=pedidos.filter(p=>p.status==='cargado' && cargDay(p) && cargDay(p) < hoy).length;
   // Total = todos los pedidos que NO están cargados (pendientes + terminados + revisión)
   const totalActivos = pedidos.filter(p=>p.status!=='cargado').length;
-  document.getElementById('s-total').textContent=totalActivos;
-  document.getElementById('s-pend').textContent=pend;
-  document.getElementById('s-term').textContent=term;
-  document.getElementById('s-carg').textContent=carg;
-  document.getElementById('b-pend').textContent=pend;
-  document.getElementById('b-term').textContent=term;
-  document.getElementById('b-todos').textContent=totalActivos;
-  document.getElementById('b-carg').textContent=carg;
-  document.getElementById('b-hist').textContent=hist;
+
 }
 
 function render() {
