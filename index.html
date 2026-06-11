@@ -824,6 +824,111 @@ tr:hover td{background:rgba(245,166,35,0.06)}
   border-radius:0 var(--r-sm) var(--r-sm) 0;
 }
 
+/* ══ VISTA RÁPIDA — popup tap largo ══ */
+#vr-bg{
+  position:fixed;inset:0;
+  background:rgba(10,8,4,0.72);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s;
+}
+#vr-bg.open{opacity:1;pointer-events:all}
+#vr-box{
+  background:#1C1F26;
+  border:2px solid #F5A623;
+  border-radius:20px;
+  width:100%;max-width:360px;
+  padding:0;
+  transform:scale(0.88);
+  transition:transform .25s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 24px 70px rgba(0,0,0,0.60),0 0 0 1px rgba(245,166,35,0.2);
+  overflow:hidden;
+}
+#vr-bg.open #vr-box{transform:scale(1)}
+#vr-header{
+  background:linear-gradient(135deg,#252930 0%,#1C1F26 100%);
+  padding:14px 18px 12px;
+  border-bottom:1px solid rgba(245,166,35,0.25);
+  display:flex;align-items:center;justify-content:space-between;
+}
+#vr-num{
+  font-family:var(--font-mono);font-size:11px;font-weight:700;
+  color:#F5A623;letter-spacing:.5px;
+}
+#vr-grupo{
+  font-family:var(--font-body);font-size:12px;font-weight:700;
+  color:rgba(255,255,255,0.6);
+}
+#vr-close{
+  background:rgba(255,255,255,0.08);border:none;
+  color:rgba(255,255,255,0.5);font-size:18px;
+  width:30px;height:30px;border-radius:50%;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+#vr-close:hover{background:rgba(255,255,255,0.15);color:#fff}
+#vr-body{padding:18px 18px 12px;display:flex;flex-direction:column;gap:14px;}
+#vr-footer{padding:12px 18px 18px;}
+#vr-back{
+  width:100%;padding:14px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,#F5A623 0%,#D4890A 100%);
+  color:#1C1F26;font-family:var(--font-body);font-size:15px;font-weight:800;
+  cursor:pointer;letter-spacing:.3px;text-transform:uppercase;
+  box-shadow:0 4px 16px rgba(245,166,35,0.45),0 2px 6px rgba(0,0,0,0.20);
+  transition:all .15s;min-height:50px;
+}
+#vr-back:active{transform:scale(0.97);box-shadow:0 2px 8px rgba(245,166,35,0.30)}
+.vr-mat-block{
+  background:rgba(245,166,35,0.08);
+  border:1.5px solid rgba(245,166,35,0.35);
+  border-radius:12px;
+  padding:14px 16px 12px;
+  display:flex;flex-direction:column;gap:4px;
+}
+.vr-mat-label{
+  font-family:var(--font-body);font-size:9px;font-weight:800;
+  text-transform:uppercase;letter-spacing:1.2px;
+  color:rgba(245,166,35,0.7);
+}
+.vr-mat-val{
+  font-family:var(--font-mono);font-size:28px;font-weight:700;
+  color:#FFFFFF;letter-spacing:2px;line-height:1.1;
+  text-transform:uppercase;
+}
+.vr-mat-val.empty{
+  font-size:16px;color:rgba(255,255,255,0.2);font-style:italic;letter-spacing:0;
+}
+.vr-info-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.vr-info-item{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;padding:10px 12px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.vr-info-label{
+  font-family:var(--font-body);font-size:9px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.9px;
+  color:rgba(255,255,255,0.35);
+}
+.vr-info-val{
+  font-family:var(--font-mono);font-size:15px;font-weight:700;
+  color:#fff;letter-spacing:.5px;
+}
+.vr-info-val.empty{color:rgba(255,255,255,0.2);font-style:italic;font-size:12px}
+.vr-producto{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;padding:10px 14px;
+  font-family:var(--font-body);font-size:13px;font-weight:600;
+  color:rgba(255,255,255,0.7);text-align:center;
+}
+
 /* ══ TABLE ACTION BUTTONS ══ */
 .tbl-actions-cell{white-space:nowrap;padding:6px 8px!important;}
 .tbl-btn{
@@ -2004,6 +2109,51 @@ tr:hover td {
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- ══ MODAL VISTA RÁPIDA (tap largo en card) ══ -->
+<div id="vr-bg" onclick="if(event.target===this)cerrarVistaRapida()">
+  <div id="vr-box">
+    <div id="vr-header">
+      <div>
+        <div id="vr-num"></div>
+        <div id="vr-grupo"></div>
+      </div>
+      <button id="vr-close" onclick="cerrarVistaRapida()">✕</button>
+    </div>
+    <div id="vr-body">
+      <div class="vr-mat-block">
+        <div class="vr-mat-label">🚛 Tractora</div>
+        <div class="vr-mat-val" id="vr-mat1"></div>
+      </div>
+      <div class="vr-mat-block" id="vr-rem-block">
+        <div class="vr-mat-label">🔗 Remolque</div>
+        <div class="vr-mat-val" id="vr-mat2"></div>
+      </div>
+      <div class="vr-info-grid">
+        <div class="vr-info-item">
+          <div class="vr-info-label">🚚 Transportista</div>
+          <div class="vr-info-val" id="vr-trans"></div>
+        </div>
+        <div class="vr-info-item">
+          <div class="vr-info-label">🚪 Muelle</div>
+          <div class="vr-info-val" id="vr-muelle"></div>
+        </div>
+        <div class="vr-info-item">
+          <div class="vr-info-label">⏰ Hora carga</div>
+          <div class="vr-info-val" id="vr-hora"></div>
+        </div>
+        <div class="vr-info-item">
+          <div class="vr-info-label">📦 Palets</div>
+          <div class="vr-info-val" id="vr-uds"></div>
+        </div>
+      </div>
+      <div class="vr-producto" id="vr-producto"></div>
+    </div>
+    <div id="vr-footer">
+      <button id="vr-back" onclick="cerrarVistaRapida()">← Atrás</button>
+    </div>
+  </div>
+</div>
 
 <!-- CONFIRM -->
 <div class="confirm-bg" id="confirmBg" onclick="if(event.target===this)closeConfirm()">
@@ -3221,16 +3371,30 @@ async function compartirTabla() {
   }
 }
 
-function exportarJSON() {
+async function exportarJSON() {
   if (!pedidos || pedidos.length === 0) { toast('⚠️ No hay pedidos para exportar'); return; }
+  toast('⏳ Preparando copia de seguridad...', 2000);
   const fecha = new Date().toISOString().slice(0,10);
-  const payload = { exportado: new Date().toISOString(), empresa: 'SAT GUADEX S.L.', total: pedidos.length, pedidos };
+  let movs = [];
+  try {
+    const snap = await colMov.get();
+    movs = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+  } catch(e) { console.warn('No se pudieron leer movimientos Euros:', e); }
+  const payload = {
+    exportado: new Date().toISOString(),
+    empresa: 'SAT GUADEX S.L.',
+    version: 2,
+    total: pedidos.length,
+    totalMovimientos: movs.length,
+    pedidos,
+    movimientos: movs
+  };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = `CargasPro_${fecha}.json`; a.click();
   URL.revokeObjectURL(url);
-  toast(`✅ JSON exportado · ${pedidos.length} pedidos`);
+  toast(`✅ Copia exportada · ${pedidos.length} pedidos · ${movs.length} movimientos Euros`);
 }
 
 function importarJSON(event) {
@@ -3241,22 +3405,44 @@ function importarJSON(event) {
     try {
       const data = JSON.parse(e.target.result);
       const lista = Array.isArray(data) ? data : (data.pedidos || []);
-      if (!lista.length) { toast('⚠️ El archivo no contiene pedidos'); return; }
+      const listaMov = (!Array.isArray(data) && Array.isArray(data.movimientos)) ? data.movimientos : [];
+      if (!lista.length && !listaMov.length) { toast('⚠️ El archivo no contiene datos'); return; }
+      const desc = [
+        lista.length ? `${lista.length} pedidos` : '',
+        listaMov.length ? `${listaMov.length} movimientos de Euros` : ''
+      ].filter(Boolean).join(' y ');
       confirm2('📥','Importar JSON',
-        `¿Importar ${lista.length} pedidos? Se añadirán a los datos existentes.`,
+        `¿Importar ${desc}? Se añadirán a los datos existentes.`,
         'Importar', '',
         async () => {
-          let ok = 0, err = 0;
+          let okP = 0, errP = 0, okM = 0, errM = 0;
           setSyncStatus('saving');
+          // Importar pedidos
           for (const p of lista) {
             try {
               const { id: _id, ...rest } = p;
               await col.add({ ...rest, _importado: new Date().toISOString() });
-              ok++;
-            } catch(_) { err++; }
+              okP++;
+            } catch(_) { errP++; }
+          }
+          // Importar movimientos de Euros
+          for (const m of listaMov) {
+            try {
+              const { id, ...rest } = m;
+              // Usar el id original si existe para no duplicar
+              if (id) {
+                await colMov.doc(id).set({ ...rest, _importado: new Date().toISOString() });
+              } else {
+                await colMov.add({ ...rest, _importado: new Date().toISOString() });
+              }
+              okM++;
+            } catch(_) { errM++; }
           }
           setSyncStatus('');
-          toast(`✅ Importados: ${ok}${err ? ' · ❌ Errores: '+err : ''}`);
+          const resP = okP ? `✅ ${okP} pedidos` : '';
+          const resM = okM ? `✅ ${okM} movimientos Euros` : '';
+          const resErr = (errP + errM) ? `· ❌ ${errP + errM} errores` : '';
+          toast([resP, resM, resErr].filter(Boolean).join(' · '));
         }
       );
     } catch(_) {
@@ -4170,6 +4356,78 @@ function repararApp() {
     }
   );
 }
+// ══ VISTA RÁPIDA — doble tap en card ══
+(function(){
+  let _vrLastTap = 0;
+  let _vrLastId  = null;
+
+  function abrirVistaRapida(id) {
+    const p = pedidos.find(x => String(x.id) === String(id));
+    if (!p) return;
+
+    document.getElementById('vr-num').textContent   = p.num ? '#' + p.num : '';
+    document.getElementById('vr-grupo').textContent = p.grupo || '';
+
+    const m1 = document.getElementById('vr-mat1');
+    m1.textContent = p.mat1 || '—';
+    m1.className   = 'vr-mat-val' + (p.mat1 ? '' : ' empty');
+
+    const m2 = document.getElementById('vr-mat2');
+    m2.textContent = p.mat2 || '—';
+    m2.className   = 'vr-mat-val' + (p.mat2 ? '' : ' empty');
+    document.getElementById('vr-rem-block').style.display = '';
+
+    const setInfo = (elId, val) => {
+      const el = document.getElementById(elId);
+      el.textContent = val || '—';
+      el.className   = 'vr-info-val' + (val ? '' : ' empty');
+    };
+    setInfo('vr-trans',  p.transportista);
+    setInfo('vr-muelle', p.muelle);
+    setInfo('vr-hora',   p.hora);
+    setInfo('vr-uds',    p.uds ? p.uds + ' pal.' : '');
+
+    const prod = [p.producto, p.ref].filter(Boolean).join(' · ');
+    const pp   = document.getElementById('vr-producto');
+    pp.textContent  = prod || '';
+    pp.style.display = prod ? '' : 'none';
+
+    document.getElementById('vr-bg').classList.add('open');
+    if (navigator.vibrate) navigator.vibrate(40);
+  }
+
+  window.cerrarVistaRapida = function() {
+    document.getElementById('vr-bg').classList.remove('open');
+  };
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') window.cerrarVistaRapida(); });
+
+  // Delegación en document → inmune a re-renders del listArea
+  document.addEventListener('touchend', function(e) {
+    // Ignorar si el popup ya está abierto
+    if (document.getElementById('vr-bg').classList.contains('open')) return;
+    // Ignorar toques en botones de acción
+    if (e.target.closest('[data-action]')) return;
+
+    const card = e.target.closest('.pedido-card');
+    if (!card) { _vrLastTap = 0; _vrLastId = null; return; }
+
+    const id  = card.querySelector('[data-action]')?.getAttribute('data-id');
+    if (!id)  { _vrLastTap = 0; return; }
+
+    const now = Date.now();
+    if (id === _vrLastId && now - _vrLastTap < 350) {
+      // Doble tap confirmado
+      _vrLastTap = 0; _vrLastId = null;
+      abrirVistaRapida(id);
+    } else {
+      _vrLastTap = now;
+      _vrLastId  = id;
+    }
+  }, { passive: true });
+
+})();
+
 window.repararApp = repararApp;
 
 </script>
