@@ -2221,7 +2221,11 @@ tr:hover td {
         <div class="fg"><label>Nº Pedido</label><input id="f-num" placeholder="1623" inputmode="numeric"></div>
         <div class="fg"><label>Cliente</label><input id="f-grupo" placeholder="Nombre cliente" list="dl-grupos" autocomplete="off"><datalist id="dl-grupos"></datalist></div>
         <div class="fg"><label>Producto</label><input id="f-producto" placeholder="Naranja, Espárrago..." list="dl-productos" autocomplete="off"><datalist id="dl-productos"></datalist></div>
-        <div class="fg"><label>Referencia</label><input id="f-ref" placeholder="26041283" autocomplete="off"></div>
+        <div class="fg">
+          <label>Referencia</label>
+          <input id="f-ref" placeholder="26041283" autocomplete="off" oninput="checkRefDuplicado()">
+          <div id="ref-dup-warn" style="display:none;margin-top:5px;padding:7px 10px;background:rgba(255,152,0,0.15);border:1px solid rgba(255,152,0,0.5);border-radius:8px;font-size:12px;color:#FFB74D;font-weight:600;">⚠️ Esta referencia ya existe en otro pedido</div>
+        </div>
         <div class="fg"><label>Palets</label><input id="f-uds" placeholder="10" inputmode="numeric"></div>
         <div class="fg"><label>🟫 Euros</label><input id="f-europalets" placeholder="0" type="number" min="0" max="999" maxlength="3" inputmode="numeric" oninput="syncEuropaletsToEC()"></div>
         <div class="fg"><label>País</label><input id="f-pais" placeholder="España, Francia..." list="dl-paises" autocomplete="off">
@@ -3016,6 +3020,9 @@ function openPedidoModal(idOrNull) {
   actualizarVisibilidadAlbaran();
   document.getElementById('mPedido').classList.add('open');
   setTimeout(()=>{ document.querySelector('#mPedido .modal-scroll').scrollTop=0; },50);
+  // Resetear aviso de referencia duplicada
+  const warnEl = document.getElementById('ref-dup-warn');
+  if (warnEl) warnEl.style.display = 'none';
 }
 function closePedidoModal() { document.getElementById('mPedido').classList.remove('open'); editId=null; if(window._histModalCleanup){ window._histModalCleanup(); window._histModalCleanup=null; } }
 function openPedidoModalHist(id) {
@@ -3118,6 +3125,19 @@ function cargarLineasPedido(lineas) {
 window.addLineaPedido = addLineaPedido;
 window.removeLineaPedido = removeLineaPedido;
 
+function checkRefDuplicado() {
+  const ref = document.getElementById('f-ref').value.trim();
+  const warn = document.getElementById('ref-dup-warn');
+  if (!warn) return false;
+  if (!ref) { warn.style.display = 'none'; return false; }
+  const duplicado = pedidos.some(p =>
+    p.ref && p.ref.trim().toLowerCase() === ref.toLowerCase() &&
+    String(p.id) !== String(editId)
+  );
+  warn.style.display = duplicado ? '' : 'none';
+  return duplicado;
+}
+
 async function savePedido() {
   const get = id => document.getElementById(id).value.trim();
   const id = editId || String(Date.now() + Math.floor(Math.random()*1000));
@@ -3138,9 +3158,28 @@ async function savePedido() {
     lineas: getLineasPedido(),
   };
   if(!p.grupo){ toast('⚠️ Indica el cliente'); return; }
+  // Comprobar referencia duplicada
+  if (p.ref) {
+    const dupPedido = pedidos.find(x =>
+      x.ref && x.ref.trim().toLowerCase() === p.ref.trim().toLowerCase() &&
+      String(x.id) !== String(editId)
+    );
+    if (dupPedido) {
+      confirm2('⚠️', 'Referencia duplicada',
+        `La referencia <strong>${p.ref}</strong> ya existe en el pedido #${dupPedido.num || '—'} (${dupPedido.grupo || '—'}).<br><br>¿Guardar igualmente?`,
+        'Guardar', 'Cancelar',
+        async () => { await _doSavePedido(p); }
+      );
+      return;
+    }
+  }
+  await _doSavePedido(p);
+}
+
+async function _doSavePedido(p) {
   const sinIntercambio = document.getElementById('f-sin-intercambio').checked;
   p.sinIntercambio = sinIntercambio;
-  const tieneED = (parseInt(get('f-ed'))||0) > 0;
+  const tieneED = (parseInt((document.getElementById('f-ed')?.value||'').trim()))||0;
   if(tieneED || sinIntercambio){
     const albaranVal = (document.getElementById('f-albaran-pedido')?.value||'').trim();
     if(albaranVal) p.albaran = albaranVal;
@@ -3496,7 +3535,7 @@ function importarJSON(event) {
 window.render=render; window.exportarCSV=exportarCSV; window.exportarJSON=exportarJSON; window.importarJSON=importarJSON; window.imprimirTabla=imprimirTabla;
 window.compartirTabla=compartirTabla; window.closeConfirm=closeConfirm; window.doConfirmOk=doConfirmOk;
 window.setTab=setTab; window.setView=setView; window.toggleFilter=toggleFilter;
-window.openPedidoModal=openPedidoModal; window.closePedidoModal=closePedidoModal; window.savePedido=savePedido;
+window.openPedidoModal=openPedidoModal; window.closePedidoModal=closePedidoModal; window.savePedido=savePedido; window.checkRefDuplicado=checkRefDuplicado;
 window.limpiarPedidoModal=limpiarPedidoModal; window.openCargarModal=openCargarModal;
 window.closeCargarModal=closeCargarModal; window.confirmarCarga=confirmarCarga;
 window.limpiarCargarModal=limpiarCargarModal; window.reabrir=reabrir; window.delPedido=delPedido;
