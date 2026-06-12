@@ -873,7 +873,7 @@ tr:hover td{background:rgba(245,166,35,0.06)}
   transition:all .15s;
 }
 #vr-close:hover{background:rgba(255,255,255,0.15);color:#fff}
-#vr-body{padding:18px 18px 12px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;}
+#vr-body{padding:18px 18px 12px;display:flex;flex-direction:column;align-items:stretch;gap:10px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;}
 #vr-footer{padding:12px 18px 18px;flex-shrink:0;}
 #vr-back{
   width:100%;padding:14px;border-radius:12px;border:none;
@@ -906,14 +906,16 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 }
 .vr-info-grid{
   display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  align-content:start;
 }
 .vr-info-item{
   background:rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.08);
   border-radius:8px;padding:10px 12px;
   display:flex;flex-direction:column;gap:3px;
+  align-self:start;
 }
-.vr-info-item.sm{padding:7px 10px;}
+.vr-info-item.sm{padding:7px 10px;align-self:start;}
 .vr-info-label{
   font-family:var(--font-body);font-size:9px;font-weight:800;
   text-transform:uppercase;letter-spacing:.9px;
@@ -929,21 +931,24 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 /* Hora / Palets — grid propio compacto */
 .vr-mini-grid{
   display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  align-self:start;
 }
 .vr-mini-item{
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.07);
-  border-radius:6px;padding:6px 10px;
-  display:flex;flex-direction:column;gap:2px;
+  background:rgba(200,0,0,0.25) !important;
+  border:1px solid rgba(255,100,100,0.5) !important;
+  border-radius:6px !important;padding:6px 10px !important;
+  display:flex !important;flex-direction:column !important;gap:2px !important;
+  min-height:0 !important;
 }
 .vr-mini-label{
-  font-family:var(--font-body);font-size:8px;font-weight:800;
-  text-transform:uppercase;letter-spacing:.9px;
-  color:rgba(255,255,255,0.28);
+  font-family:var(--font-body) !important;font-size:8px !important;font-weight:800 !important;
+  text-transform:uppercase !important;letter-spacing:.9px !important;
+  color:rgba(255,255,255,0.28) !important;
 }
 .vr-mini-val{
-  font-family:var(--font-mono);font-size:12px;font-weight:600;
-  color:rgba(255,255,255,0.65);letter-spacing:.3px;
+  font-family:var(--font-mono) !important;font-size:12px !important;font-weight:600 !important;
+  color:rgba(255,255,255,0.65) !important;letter-spacing:.3px !important;
+  line-height:1.2 !important;
 }
 
 /* Hora / Palets — tamaño reducido */
