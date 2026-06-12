@@ -913,6 +913,7 @@ tr:hover td{background:rgba(245,166,35,0.06)}
   border-radius:8px;padding:10px 12px;
   display:flex;flex-direction:column;gap:3px;
 }
+.vr-info-item.sm{padding:7px 10px;}
 .vr-info-label{
   font-family:var(--font-body);font-size:9px;font-weight:800;
   text-transform:uppercase;letter-spacing:.9px;
@@ -922,7 +923,25 @@ tr:hover td{background:rgba(245,166,35,0.06)}
   font-family:var(--font-mono);font-size:15px;font-weight:700;
   color:#fff;letter-spacing:.5px;
 }
+.vr-info-val.sm{font-size:12px;font-weight:600;letter-spacing:.3px;}
 .vr-info-val.empty{color:rgba(255,255,255,0.2);font-style:italic;font-size:12px}
+/* Euros destacado */
+.vr-euros-block{
+  background:rgba(109,76,65,0.18);
+  border:1.5px solid rgba(255,204,128,0.4);
+  border-radius:12px;padding:12px 16px 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.vr-euros-label{
+  font-family:var(--font-body);font-size:9px;font-weight:800;
+  text-transform:uppercase;letter-spacing:1.2px;
+  color:rgba(255,204,128,0.7);
+}
+.vr-euros-val{
+  font-family:var(--font-mono);font-size:22px;font-weight:700;
+  color:#FFE0B2;letter-spacing:1px;
+}
+.vr-euros-val.empty{font-size:14px;color:rgba(255,255,255,0.2);font-style:italic;}
 .vr-producto{
   background:rgba(255,255,255,0.04);
   border:1px solid rgba(255,255,255,0.08);
@@ -2112,7 +2131,7 @@ tr:hover td {
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- ══ MODAL VISTA RÁPIDA (tap largo en card) ══ -->
+<!-- ══ MODAL VISTA RÁPIDA (doble tap en card) ══ -->
 <div id="vr-bg" onclick="if(event.target===this)cerrarVistaRapida()">
   <div id="vr-box">
     <div id="vr-header">
@@ -2123,6 +2142,14 @@ tr:hover td {
       <button id="vr-close" onclick="cerrarVistaRapida()">✕</button>
     </div>
     <div id="vr-body">
+      <!-- Nº pedido -->
+      <div class="vr-info-grid" id="vr-pedido-row">
+        <div class="vr-info-item sm" style="grid-column:1/-1">
+          <div class="vr-info-label">🔢 Nº Pedido</div>
+          <div class="vr-info-val" id="vr-pedido-num"></div>
+        </div>
+      </div>
+      <!-- Matrículas -->
       <div class="vr-mat-block">
         <div class="vr-mat-label">🚛 Tractora</div>
         <div class="vr-mat-val" id="vr-mat1"></div>
@@ -2131,6 +2158,7 @@ tr:hover td {
         <div class="vr-mat-label">🔗 Remolque</div>
         <div class="vr-mat-val" id="vr-mat2"></div>
       </div>
+      <!-- Transportista + Muelle -->
       <div class="vr-info-grid">
         <div class="vr-info-item">
           <div class="vr-info-label">🚚 Transportista</div>
@@ -2140,15 +2168,24 @@ tr:hover td {
           <div class="vr-info-label">🚪 Muelle</div>
           <div class="vr-info-val" id="vr-muelle"></div>
         </div>
-        <div class="vr-info-item">
+        <!-- Hora + Palets más pequeños -->
+        <div class="vr-info-item sm">
           <div class="vr-info-label">⏰ Hora carga</div>
-          <div class="vr-info-val" id="vr-hora"></div>
+          <div class="vr-info-val sm" id="vr-hora"></div>
         </div>
-        <div class="vr-info-item">
+        <div class="vr-info-item sm">
           <div class="vr-info-label">📦 Palets</div>
-          <div class="vr-info-val" id="vr-uds"></div>
+          <div class="vr-info-val sm" id="vr-uds"></div>
         </div>
       </div>
+      <!-- Euros -->
+      <div class="vr-euros-block" id="vr-euros-block">
+        <div>
+          <div class="vr-euros-label">🟫 Europalets</div>
+          <div class="vr-euros-val" id="vr-euros"></div>
+        </div>
+      </div>
+      <!-- Producto -->
       <div class="vr-producto" id="vr-producto"></div>
     </div>
     <div id="vr-footer">
@@ -4367,9 +4404,17 @@ function repararApp() {
     const p = pedidos.find(x => String(x.id) === String(id));
     if (!p) return;
 
+    // Cabecera (grupo + ID interno)
     document.getElementById('vr-num').textContent   = p.num ? '#' + p.num : '';
     document.getElementById('vr-grupo').textContent = p.grupo || '';
 
+    // Nº Pedido
+    const pnEl = document.getElementById('vr-pedido-num');
+    pnEl.textContent = p.num || '—';
+    pnEl.className   = 'vr-info-val' + (p.num ? '' : ' empty');
+    document.getElementById('vr-pedido-row').style.display = p.num ? '' : 'none';
+
+    // Matrículas
     const m1 = document.getElementById('vr-mat1');
     m1.textContent = p.mat1 || '—';
     m1.className   = 'vr-mat-val' + (p.mat1 ? '' : ' empty');
@@ -4379,19 +4424,29 @@ function repararApp() {
     m2.className   = 'vr-mat-val' + (p.mat2 ? '' : ' empty');
     document.getElementById('vr-rem-block').style.display = '';
 
-    const setInfo = (elId, val) => {
+    // Info — transportista y muelle a tamaño normal; hora y palets pequeños
+    const setInfo = (elId, val, small) => {
       const el = document.getElementById(elId);
       el.textContent = val || '—';
-      el.className   = 'vr-info-val' + (val ? '' : ' empty');
+      el.className   = 'vr-info-val' + (small ? ' sm' : '') + (val ? '' : ' empty');
     };
-    setInfo('vr-trans',  p.transportista);
-    setInfo('vr-muelle', p.muelle);
-    setInfo('vr-hora',   p.hora);
-    setInfo('vr-uds',    p.uds ? p.uds + ' pal.' : '');
+    setInfo('vr-trans',  p.transportista, false);
+    setInfo('vr-muelle', p.muelle,        false);
+    setInfo('vr-hora',   p.hora,          true);
+    setInfo('vr-uds',    p.uds ? p.uds + ' pal.' : '', true);
 
+    // Euros
+    const ep    = p.europalets;
+    const epEl  = document.getElementById('vr-euros');
+    const epBlk = document.getElementById('vr-euros-block');
+    epEl.textContent  = ep ? ep + ' 🟫' : '—';
+    epEl.className    = 'vr-euros-val' + (ep ? '' : ' empty');
+    epBlk.style.display = ep ? '' : 'none';
+
+    // Producto + ref
     const prod = [p.producto, p.ref].filter(Boolean).join(' · ');
     const pp   = document.getElementById('vr-producto');
-    pp.textContent  = prod || '';
+    pp.textContent   = prod || '';
     pp.style.display = prod ? '' : 'none';
 
     document.getElementById('vr-bg').classList.add('open');
