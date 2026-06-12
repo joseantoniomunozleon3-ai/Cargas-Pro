@@ -924,6 +924,7 @@ tr:hover td{background:rgba(245,166,35,0.06)}
   color:#fff;letter-spacing:.5px;
 }
 .vr-info-val.sm{font-size:12px;font-weight:600;letter-spacing:.3px;}
+.vr-info-val.xl{font-size:26px;font-weight:700;letter-spacing:2px;}
 .vr-info-val.empty{color:rgba(255,255,255,0.2);font-style:italic;font-size:12px}
 /* Euros destacado */
 .vr-euros-block{
@@ -4411,7 +4412,7 @@ function repararApp() {
     // Nº Pedido
     const pnEl = document.getElementById('vr-pedido-num');
     pnEl.textContent = p.num || '—';
-    pnEl.className   = 'vr-info-val' + (p.num ? '' : ' empty');
+    pnEl.className   = 'vr-info-val xl' + (p.num ? '' : ' empty');
     document.getElementById('vr-pedido-row').style.display = p.num ? '' : 'none';
 
     // Matrículas
