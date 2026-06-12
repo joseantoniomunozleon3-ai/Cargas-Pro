@@ -926,6 +926,26 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 .vr-info-val.sm{font-size:12px;font-weight:600;letter-spacing:.3px;}
 .vr-info-val.xl{font-size:26px;font-weight:700;letter-spacing:2px;}
 .vr-info-val.empty{color:rgba(255,255,255,0.2);font-style:italic;font-size:12px}
+/* Hora / Palets — grid propio compacto */
+.vr-mini-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+}
+.vr-mini-item{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:6px;padding:6px 10px;
+  display:flex;flex-direction:column;gap:2px;
+}
+.vr-mini-label{
+  font-family:var(--font-body);font-size:8px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.9px;
+  color:rgba(255,255,255,0.28);
+}
+.vr-mini-val{
+  font-family:var(--font-mono);font-size:12px;font-weight:600;
+  color:rgba(255,255,255,0.65);letter-spacing:.3px;
+}
+
 /* Hora / Palets — tamaño reducido */
 .vr-info-item.vr-mini{padding:5px 10px;}
 .vr-info-item.vr-mini .vr-info-label{font-size:8px;}
@@ -2192,14 +2212,16 @@ tr:hover td {
           <div class="vr-info-label">🚪 Muelle</div>
           <div class="vr-info-val" id="vr-muelle"></div>
         </div>
-        <!-- Hora + Palets más pequeños -->
-        <div class="vr-info-item sm vr-mini">
-          <div class="vr-info-label">⏰ Hora carga</div>
-          <div class="vr-info-val sm" id="vr-hora"></div>
+      </div>
+      <!-- Hora + Palets — grid propio más compacto -->
+      <div class="vr-mini-grid">
+        <div class="vr-mini-item">
+          <div class="vr-mini-label">⏰ Hora carga</div>
+          <div class="vr-mini-val" id="vr-hora"></div>
         </div>
-        <div class="vr-info-item sm vr-mini">
-          <div class="vr-info-label">📦 Palets</div>
-          <div class="vr-info-val sm" id="vr-uds"></div>
+        <div class="vr-mini-item">
+          <div class="vr-mini-label">📦 Palets</div>
+          <div class="vr-mini-val" id="vr-uds"></div>
         </div>
       </div>
       <!-- Referencia cliente -->
@@ -4492,7 +4514,7 @@ function repararApp() {
     m2.className   = 'vr-mat-val' + (p.mat2 ? '' : ' empty');
     document.getElementById('vr-rem-block').style.display = '';
 
-    // Info — transportista y muelle a tamaño normal; hora y palets pequeños
+    // Info — transportista y muelle a tamaño normal
     const setInfo = (elId, val, small) => {
       const el = document.getElementById(elId);
       el.textContent = val || '—';
@@ -4500,8 +4522,14 @@ function repararApp() {
     };
     setInfo('vr-trans',  p.transportista, false);
     setInfo('vr-muelle', p.muelle,        false);
-    setInfo('vr-hora',   p.hora,          true);
-    setInfo('vr-uds',    p.uds ? p.uds + ' pal.' : '', true);
+    // Hora y palets — elementos mini con clase propia
+    const setMini = (elId, val) => {
+      const el = document.getElementById(elId);
+      el.textContent = val || '—';
+      el.className   = 'vr-mini-val' + (val ? '' : ' empty');
+    };
+    setMini('vr-hora', p.hora);
+    setMini('vr-uds',  p.uds ? p.uds + ' pal.' : '');
 
     // Euros
     const ep    = p.europalets;
