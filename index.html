@@ -4527,11 +4527,13 @@ function repararApp() {
     };
     setInfo('vr-trans',  p.transportista, false);
     setInfo('vr-muelle', p.muelle,        false);
-    // Hora y palets — elementos mini con clase propia
+    // Hora y palets — elementos mini con clase propia, ocultar si vacío
     const setMini = (elId, val) => {
       const el = document.getElementById(elId);
-      el.textContent = val || '—';
-      el.className   = 'vr-mini-val' + (val ? '' : ' empty');
+      const item = el.closest('.vr-mini-item');
+      el.textContent = val || '';
+      el.className   = 'vr-mini-val';
+      if (item) item.style.display = val ? '' : 'none';
     };
     setMini('vr-hora', p.hora);
     setMini('vr-uds',  p.uds ? p.uds + ' pal.' : '');
