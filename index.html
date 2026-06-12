@@ -930,15 +930,16 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 .vr-info-val.empty{color:rgba(255,255,255,0.2);font-style:italic;font-size:12px}
 /* Hora / Palets — grid propio compacto */
 .vr-mini-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;
-  align-items:start;
+  display:flex;flex-direction:row;gap:8px;
 }
 .vr-mini-item{
-  background:rgba(255,255,255,0.04) !important;
-  border:1px solid rgba(255,255,255,0.07) !important;
-  border-radius:6px !important;
-  padding:6px 10px !important;
-  display:flex !important;flex-direction:column !important;gap:2px !important;
+  flex:1;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:6px;
+  padding:6px 10px;
+  display:flex;flex-direction:column;gap:2px;
+  height:44px;overflow:hidden;
 }
 .vr-mini-label{
   font-family:var(--font-body) !important;font-size:8px !important;font-weight:800 !important;
@@ -2219,12 +2220,12 @@ tr:hover td {
         </div>
       </div>
       <!-- Hora + Palets — grid propio más compacto -->
-      <div class="vr-mini-grid">
-        <div class="vr-mini-item">
+      <div class="vr-mini-grid" style="display:flex;flex-direction:row;gap:8px">
+        <div class="vr-mini-item" style="flex:1;height:44px;overflow:hidden">
           <div class="vr-mini-label">⏰ Hora carga</div>
           <div class="vr-mini-val" id="vr-hora"></div>
         </div>
-        <div class="vr-mini-item">
+        <div class="vr-mini-item" style="flex:1;height:44px;overflow:hidden">
           <div class="vr-mini-label">📦 Palets</div>
           <div class="vr-mini-val" id="vr-uds"></div>
         </div>
@@ -4527,13 +4528,11 @@ function repararApp() {
     };
     setInfo('vr-trans',  p.transportista, false);
     setInfo('vr-muelle', p.muelle,        false);
-    // Hora y palets — elementos mini con clase propia, ocultar si vacío
+    // Hora y palets — elementos mini
     const setMini = (elId, val) => {
       const el = document.getElementById(elId);
-      const item = el.closest('.vr-mini-item');
-      el.textContent = val || '';
+      el.textContent = val || '—';
       el.className   = 'vr-mini-val';
-      if (item) item.style.display = val ? '' : 'none';
     };
     setMini('vr-hora', p.hora);
     setMini('vr-uds',  p.uds ? p.uds + ' pal.' : '');
