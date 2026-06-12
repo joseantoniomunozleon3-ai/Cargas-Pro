@@ -926,6 +926,29 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 .vr-info-val.sm{font-size:12px;font-weight:600;letter-spacing:.3px;}
 .vr-info-val.xl{font-size:26px;font-weight:700;letter-spacing:2px;}
 .vr-info-val.empty{color:rgba(255,255,255,0.2);font-style:italic;font-size:12px}
+/* Hora / Palets — tamaño reducido */
+.vr-info-item.vr-mini{padding:5px 10px;}
+.vr-info-item.vr-mini .vr-info-label{font-size:8px;}
+.vr-info-item.vr-mini .vr-info-val.sm{font-size:11px;}
+
+/* Referencia cliente — bloque destacado */
+.vr-ref-block{
+  background:rgba(100,140,255,0.10);
+  border:1.5px solid rgba(120,160,255,0.35);
+  border-radius:12px;padding:10px 16px 8px;
+  display:none;
+}
+.vr-ref-block.show{display:block;}
+.vr-ref-label{
+  font-family:var(--font-body);font-size:9px;font-weight:800;
+  text-transform:uppercase;letter-spacing:1.2px;
+  color:rgba(150,180,255,0.75);margin-bottom:4px;
+}
+.vr-ref-val{
+  font-family:var(--font-mono);font-size:20px;font-weight:700;
+  color:#C8D8FF;letter-spacing:1.5px;
+}
+
 /* Euros destacado */
 .vr-euros-block{
   background:rgba(109,76,65,0.18);
@@ -2170,14 +2193,19 @@ tr:hover td {
           <div class="vr-info-val" id="vr-muelle"></div>
         </div>
         <!-- Hora + Palets más pequeños -->
-        <div class="vr-info-item sm">
+        <div class="vr-info-item sm vr-mini">
           <div class="vr-info-label">⏰ Hora carga</div>
           <div class="vr-info-val sm" id="vr-hora"></div>
         </div>
-        <div class="vr-info-item sm">
+        <div class="vr-info-item sm vr-mini">
           <div class="vr-info-label">📦 Palets</div>
           <div class="vr-info-val sm" id="vr-uds"></div>
         </div>
+      </div>
+      <!-- Referencia cliente -->
+      <div class="vr-ref-block" id="vr-ref-block">
+        <div class="vr-ref-label">📋 Referencia cliente</div>
+        <div class="vr-ref-val" id="vr-ref"></div>
       </div>
       <!-- Euros -->
       <div class="vr-euros-block" id="vr-euros-block">
@@ -4483,11 +4511,16 @@ function repararApp() {
     epEl.className    = 'vr-euros-val' + (ep ? '' : ' empty');
     epBlk.style.display = ep ? '' : 'none';
 
-    // Producto + ref
-    const prod = [p.producto, p.ref].filter(Boolean).join(' · ');
-    const pp   = document.getElementById('vr-producto');
-    pp.textContent   = prod || '';
-    pp.style.display = prod ? '' : 'none';
+    // Referencia cliente (separada)
+    const refEl  = document.getElementById('vr-ref');
+    const refBlk = document.getElementById('vr-ref-block');
+    refEl.textContent = p.ref || '';
+    refBlk.classList.toggle('show', !!p.ref);
+
+    // Producto (solo producto, sin ref)
+    const pp = document.getElementById('vr-producto');
+    pp.textContent   = p.producto || '';
+    pp.style.display = p.producto ? '' : 'none';
 
     document.getElementById('vr-bg').classList.add('open');
     if (navigator.vibrate) navigator.vibrate(40);
