@@ -1514,7 +1514,7 @@ header {
   /* Grosor físico: borde inferior oscuro */
   outline: 2px solid rgba(160,80,0,0.0);
   transition: all .22s var(--transition-bounce);
-  position: relative;
+  position: fixed;bottom:80px;right:20px;z-index:50;
 }
 .fab::before {
   /* Highlight superior */
@@ -2276,17 +2276,29 @@ tr:hover td {
       <div class="fgrid">
         <div class="fg"><label>Nº Pedido</label><input id="f-num" placeholder="1623" inputmode="numeric"></div>
         <div class="fg"><label>Cliente</label><input id="f-grupo" placeholder="Nombre cliente" list="dl-grupos" autocomplete="off"><datalist id="dl-grupos"></datalist></div>
-        <div class="fg"><label>Producto</label><input id="f-producto" placeholder="Naranja, Espárrago..." list="dl-productos" autocomplete="off"><datalist id="dl-productos"></datalist></div>
+        <div class="fg"><label>Fecha</label><input type="date" id="f-fecha"></div>
         <div class="fg">
           <label>Referencia</label>
           <input id="f-ref" placeholder="26041283" autocomplete="off" oninput="checkRefDuplicado()">
           <div id="ref-dup-warn" style="display:none;margin-top:5px;padding:7px 10px;background:rgba(255,152,0,0.15);border:1px solid rgba(255,152,0,0.5);border-radius:8px;font-size:12px;color:#FFB74D;font-weight:600;">⚠️ Esta referencia ya existe en otro pedido</div>
         </div>
-        <div class="fg"><label>Palets</label><input id="f-uds" placeholder="10" inputmode="numeric"></div>
-        <div class="fg"><label>🟫 Euros</label><input id="f-europalets" placeholder="0" type="number" min="0" max="999" maxlength="3" inputmode="numeric" oninput="syncEuropaletsToEC()"></div>
-        <div class="fg"><label>País</label><input id="f-pais" placeholder="España, Francia..." list="dl-paises" autocomplete="off">
-          <datalist id="dl-paises"><option value="España"></option><option value="Francia"></option><option value="Portugal"></option><option value="Alemania"></option><option value="Italia"></option><option value="Bélgica"></option><option value="Países Bajos"></option><option value="Reino Unido"></option><option value="Polonia"></option><option value="Austria"></option><option value="Suecia"></option><option value="Dinamarca"></option></datalist></div>
       </div>
+      <div class="fsec" style="margin-top:14px">Productos</div>
+      <div id="productos-container">
+        <div class="producto-fila" data-idx="0">
+          <div class="fgrid">
+            <div class="fg"><label>📦 Producto</label><input id="f-producto" placeholder="Naranja, Espárrago..." list="dl-productos" autocomplete="off"><datalist id="dl-productos"></datalist></div>
+            <div class="fg"><label>Palets</label><input id="f-uds" placeholder="10" inputmode="numeric"></div>
+          </div>
+          <div class="fgrid" style="margin-top:8px">
+            <div class="fg"><label>🟫 Euros</label><input id="f-europalets" placeholder="0" type="number" min="0" max="999" maxlength="3" inputmode="numeric" oninput="syncEuropaletsToEC()"></div>
+            <div class="fg"><label>País</label><input id="f-pais" placeholder="España, Francia..." list="dl-paises" autocomplete="off">
+              <datalist id="dl-paises"><option value="España"></option><option value="Francia"></option><option value="Portugal"></option><option value="Alemania"></option><option value="Italia"></option><option value="Bélgica"></option><option value="Países Bajos"></option><option value="Reino Unido"></option><option value="Polonia"></option><option value="Austria"></option><option value="Suecia"></option><option value="Dinamarca"></option></datalist></div>
+          </div>
+        </div>
+        <div id="productos-extra-container"></div>
+      </div>
+      <button type="button" onclick="addProductoExtra()" style="margin-top:8px;width:100%;padding:10px;border:2px dashed var(--border2);border-radius:var(--r-sm);background:var(--surface2);color:var(--t2);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.4px;text-transform:uppercase;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--t2)'">＋ Añadir producto</button>
       <div class="fsec">Matrículas</div>
       <div class="fgrid">
         <div class="fg"><label>🚛 Tractora</label><input id="f-mat1" placeholder="4854-MJT" style="text-transform:uppercase" autocomplete="off"></div>
@@ -2343,7 +2355,6 @@ tr:hover td {
             <option value="cargado">🟢 Cargado</option>
           </select>
         </div>
-        <div class="fg"><label>Fecha</label><input type="date" id="f-fecha"></div>
       </div>
       <div class="fgrid full" style="margin-top:10px">
         <div class="fg"><label>Notas</label><textarea id="f-notas" placeholder="Observaciones..."></textarea></div>
@@ -2926,6 +2937,7 @@ function cardHtmlHistorico(p) {
         ${p.europalets?`<div class="info-block sm"><div class="info-label">🟫 Euros</div><span class="tag tag-palets" style="background:#FFE0B2;color:#6D4C41;border-color:#FFCC80">${p.europalets}</span></div>`:''}
         ${p.pais?`<div class="info-block md"><div class="info-label">País</div><span class="tag tag-pais">${p.pais}</span></div>`:''}
       </div>
+      ${productosExtraHtml(p)}
       <div class="info-row">
         ${p.mat1?`<div class="info-block md"><div class="info-label">🚛 Tractora</div><span class="tag tag-mat1">${p.mat1}</span></div>`:''}
         ${p.mat2?`<div class="info-block md"><div class="info-label">🔗 Remolque</div><span class="tag tag-mat2">${p.mat2}</span></div>`:''}
@@ -2956,6 +2968,18 @@ function renderCards(filtered) {
   document.getElementById('listArea').innerHTML=html;
 }
 
+// Renderiza filas adicionales de info-row para los productos extra de un pedido (multi-producto)
+function productosExtraHtml(p) {
+  const extra = p.productosExtra||[];
+  if(!extra.length) return '';
+  return extra.map(pe => `<div class="info-row">
+        ${pe.producto?`<div class="info-block md"><div class="info-label">📦 Producto</div><span class="tag tag-producto">${pe.producto}</span></div>`:''}
+        ${pe.uds?`<div class="info-block sm"><div class="info-label">Palets</div><span class="tag tag-palets">${pe.uds}</span></div>`:''}
+        ${pe.europalets?`<div class="info-block sm"><div class="info-label">🟫 Euros</div><span class="tag tag-palets" style="background:#FFE0B2;color:#6D4C41;border-color:#FFCC80">${pe.europalets}</span></div>`:''}
+        ${pe.pais?`<div class="info-block md"><div class="info-label">País</div><span class="tag tag-pais">${pe.pais}</span></div>`:''}
+      </div>`).join('');
+}
+
 function cardHtml(p) {
   const pillClass={pendiente:'pill-pendiente',terminado:'pill-terminado',revision:'pill-revision',cargado:'pill-cargado'}[p.status]||'pill-pendiente';
   const pillLabel={pendiente:'Confección',terminado:'Terminado',revision:'Revisión',cargado:'Cargado'}[p.status]||'—';
@@ -2981,6 +3005,7 @@ function cardHtml(p) {
         ${p.europalets?`<div class="info-block sm"><div class="info-label">🟫 Euros</div><span class="tag tag-palets" style="background:#FFE0B2;color:#6D4C41;border-color:#FFCC80">${p.europalets}</span></div>`:''}
         ${p.pais?`<div class="info-block md"><div class="info-label">País</div><span class="tag tag-pais">${p.pais}</span></div>`:''}
       </div>
+      ${productosExtraHtml(p)}
       <div class="info-row">
         ${p.mat1?`<div class="info-block md"><div class="info-label">🚛 Tractora</div><span class="tag tag-mat1">${p.mat1}</span></div>`:''}
         ${p.mat2?`<div class="info-block md"><div class="info-label">🔗 Remolque</div><span class="tag tag-mat2">${p.mat2}</span></div>`:''}
@@ -3055,6 +3080,8 @@ function openPedidoModal(idOrNull) {
     const fid = k==='hora_salida'?'f-hora-salida':'f-'+k;
     const el = document.getElementById(fid); if(el) el.value = p?.[k]||'';
   });
+  // Cargar productos extra (multi-producto)
+  cargarProductosExtra(p?.productosExtra||[]);
   // Cargar líneas de pedido
   const lineas = p?.lineas||[];
   cargarLineasPedido(lineas);
@@ -3181,6 +3208,56 @@ function cargarLineasPedido(lineas) {
 window.addLineaPedido = addLineaPedido;
 window.removeLineaPedido = removeLineaPedido;
 
+// ── Sistema de productos extra (multi-producto por pedido) ──
+let _productoIdx = 0;
+
+function addProductoExtra(datos) {
+  const idx = _productoIdx++;
+  const container = document.getElementById('productos-extra-container');
+  const v = datos || {};
+  const div = document.createElement('div');
+  div.className = 'producto-fila producto-extra';
+  div.dataset.idx = idx;
+  div.style.marginTop = '12px';
+  div.style.paddingTop = '12px';
+  div.style.borderTop = '1px dashed var(--border2)';
+  div.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+      <button type="button" class="linea-del" onclick="removeProductoExtra(this)" title="Eliminar producto">✕</button>
+    </div>
+    <div class="fgrid">
+      <div class="fg"><label>📦 Producto</label><input class="pe-producto" placeholder="Naranja, Espárrago..." list="dl-productos" autocomplete="off" value="${_esc(v.producto)}"></div>
+      <div class="fg"><label>Palets</label><input class="pe-uds" placeholder="10" inputmode="numeric" value="${_esc(v.uds)}"></div>
+    </div>
+    <div class="fgrid" style="margin-top:8px">
+      <div class="fg"><label>🟫 Euros</label><input class="pe-europalets" placeholder="0" type="number" min="0" max="999" maxlength="3" inputmode="numeric" value="${_esc(v.europalets)}"></div>
+      <div class="fg"><label>País</label><input class="pe-pais" placeholder="España, Francia..." list="dl-paises" autocomplete="off" value="${_esc(v.pais)}"></div>
+    </div>`;
+  container.appendChild(div);
+}
+
+function removeProductoExtra(btn) {
+  btn.closest('.producto-extra').remove();
+}
+
+function getProductosExtra() {
+  return [...document.querySelectorAll('#productos-extra-container .producto-extra')].map(el => ({
+    producto:    el.querySelector('.pe-producto')?.value.trim()||'',
+    uds:         el.querySelector('.pe-uds')?.value.trim()||'',
+    europalets:  parseInt(el.querySelector('.pe-europalets')?.value)||0,
+    pais:        el.querySelector('.pe-pais')?.value.trim()||'',
+  })).filter(p => p.producto||p.uds||p.europalets||p.pais);
+}
+
+function cargarProductosExtra(productosExtra) {
+  const container = document.getElementById('productos-extra-container');
+  container.innerHTML = '';
+  (productosExtra||[]).forEach(p => addProductoExtra(p));
+}
+
+window.addProductoExtra = addProductoExtra;
+window.removeProductoExtra = removeProductoExtra;
+
 function checkRefDuplicado() {
   const ref = document.getElementById('f-ref').value.trim();
   const warn = document.getElementById('ref-dup-warn');
@@ -3212,6 +3289,7 @@ async function savePedido() {
     ec: parseInt(get('f-ec'))||0,
     ed: parseInt(get('f-ed'))||0,
     lineas: getLineasPedido(),
+    productosExtra: getProductosExtra(),
   };
   if(!p.grupo){ toast('⚠️ Indica el cliente'); return; }
   // Comprobar referencia duplicada
@@ -3250,6 +3328,7 @@ function limpiarPedidoModal() {
   confirm2('🗑','¿Limpiar formulario?','Se borrarán todos los campos','Limpiar','',()=>{
     ['num','grupo','producto','ref','uds','pais','mat1','mat2','muelle','transportista','notas','ec','ed','europalets'].forEach(k=>{ const el=document.getElementById('f-'+k); if(el) el.value=''; });
     cargarLineasPedido([]);
+    cargarProductosExtra([]);
     const sinInt = document.getElementById('f-sin-intercambio'); if(sinInt) sinInt.checked=false;
     const fAlb = document.getElementById('f-albaran-pedido'); if(fAlb) fAlb.value='';
     const blAlb = document.getElementById('bloque-albaran-pedido'); if(blAlb) blAlb.style.display='none';
