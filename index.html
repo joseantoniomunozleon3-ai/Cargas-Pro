@@ -1013,7 +1013,8 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 .tbl-cargar:hover{background:#EDFAF2;border-color:var(--status-load)}
 .tbl-reabrir:hover{background:#EEF5FF;border-color:var(--sap-blue)}
 .tbl-del:hover{background:#FFF0F0;border-color:var(--dhl-red)}
-@media print{.tbl-actions-cell,.tbl-btn{display:none!important}}
+.lineas-row{display:none}
+@media print{.tbl-actions-cell,.tbl-btn{display:none!important}.lineas-row{display:table-row!important}}
 
 /* === EUROPALETS MÓDULO — Enterprise === */
 .ep-screen{display:none;background:var(--bg)}
@@ -1832,7 +1833,8 @@ header {
   border-radius: 14px;
   box-shadow: var(--shadow-3d-lg);
   border: 1px solid var(--border2);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 th {
@@ -3033,6 +3035,28 @@ function renderTable(filtered) {
     const cargarBtn = isCargado
       ? `<button class="tbl-btn tbl-reabrir" data-action="reabrir" data-id="${p.id}" title="Reabrir">↩️</button>`
       : `<button class="tbl-btn tbl-cargar" data-action="cargar" data-id="${p.id}" title="Cargar">🚛</button>`;
+    const lineas = p.lineas||[];
+    const colSpan = showStatus ? 14 : 13;
+    const lineasRow = lineas.length ? `<tr class="lineas-row">
+      <td colspan="${colSpan}" style="padding:0 10px 8px 32px;background:#FAFAF7;border-bottom:1px solid #E8E0CC">
+        <table style="width:100%;border-collapse:collapse;font-size:9px;margin-top:4px">
+          <thead><tr>
+            <th style="padding:3px 7px;background:#2A2E38;color:#F5A623;text-align:left;font-size:8px;letter-spacing:.8px">MARCAS</th>
+            <th style="padding:3px 7px;background:#2A2E38;color:#F5A623;text-align:left;font-size:8px;letter-spacing:.8px">BULTOS</th>
+            <th style="padding:3px 7px;background:#2A2E38;color:#F5A623;text-align:left;font-size:8px;letter-spacing:.8px">EMBALAJE</th>
+            <th style="padding:3px 7px;background:#2A2E38;color:#F5A623;text-align:left;font-size:8px;letter-spacing:.8px">NATURALEZA</th>
+            <th style="padding:3px 7px;background:#2A2E38;color:#F5A623;text-align:left;font-size:8px;letter-spacing:.8px">N.ESTADÍSTICO</th>
+          </tr></thead>
+          <tbody>${lineas.map((l,i)=>`<tr style="background:${i%2?'#F2EFE8':'#FAFAF7'}">
+            <td style="padding:3px 7px;border-bottom:1px solid #E0D8C8;font-weight:700">${l.marcas||'—'}</td>
+            <td style="padding:3px 7px;border-bottom:1px solid #E0D8C8">${l.bultos||'—'}</td>
+            <td style="padding:3px 7px;border-bottom:1px solid #E0D8C8">${l.embalaje||'—'}</td>
+            <td style="padding:3px 7px;border-bottom:1px solid #E0D8C8">${l.naturaleza||'—'}</td>
+            <td style="padding:3px 7px;border-bottom:1px solid #E0D8C8;font-family:monospace">${l.nestadistico||'—'}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </td>
+    </tr>` : '';
     return `<tr>
     <td style="color:var(--t3);font-weight:700">${p.num||'—'}</td>
     <td style="font-weight:700;color:var(--t1)">${p.grupo||'—'}</td>
@@ -3053,10 +3077,10 @@ function renderTable(filtered) {
       ${cargarBtn}
       <button class="tbl-btn tbl-del" data-action="del" data-id="${p.id}" title="Eliminar">🗑️</button>
     </td>
-  </tr>`;
+  </tr>${lineasRow}`;
   }).join('');
   const thStatus = showStatus ? `<th>Estado</th>` : '';
-  document.getElementById('tableArea').innerHTML=`<div class="table-wrap"><table><thead><tr><th>#</th><th>Cliente</th><th>Producto</th><th>Ref</th><th>Palets</th><th>🟫 Euros</th><th>Tractora</th><th>Remolque</th><th>H. Carga</th><th>H. Salida</th><th>Muelle</th><th>Transportista</th>${thStatus}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  document.getElementById('tableArea').innerHTML=`<div class="table-wrap"><table style="min-width:900px"><thead><tr><th>#</th><th>Cliente</th><th>Producto</th><th>Ref</th><th>Palets</th><th>🟫 Euros</th><th>Tractora</th><th>Remolque</th><th>H. Carga</th><th>H. Salida</th><th>Muelle</th><th>Transportista</th>${thStatus}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 document.addEventListener('click', function(e) {
@@ -3451,6 +3475,8 @@ function _buildPrintHtml(tab, fecha, countTxt, tableHtml) {
     tr:nth-child(even) td{background:#f8f8f8}
     tr:last-child td{border-bottom:none}
     .report-footer{margin-top:10px;font-size:9px;color:#aaa;text-align:right}
+    .lineas-row{display:table-row!important}
+    .tbl-actions-cell,.tbl-btn{display:none!important}
     @media print{
       body{padding:8px}
       .no-print{display:none}
@@ -3556,6 +3582,19 @@ async function compartirTabla() {
     if(p.muelle)      tiempos.push(`🚪 Muelle ${p.muelle}`);
     if(tiempos.length) lines.push(`   ${tiempos.join(' · ')}`);
     if(p.notas)       lines.push(`   💬 ${p.notas}`);
+    const lineas = p.lineas||[];
+    if(lineas.length){
+      lines.push(`   📋 Líneas:`);
+      lineas.forEach((l,i)=>{
+        const parts=[];
+        if(l.marcas)      parts.push(`Marcas: ${l.marcas}`);
+        if(l.bultos)      parts.push(`Bultos: ${l.bultos}`);
+        if(l.embalaje)    parts.push(`Emb.: ${l.embalaje}`);
+        if(l.naturaleza)  parts.push(`Nat.: ${l.naturaleza}`);
+        if(l.nestadistico)parts.push(`N.Est.: ${l.nestadistico}`);
+        lines.push(`      ${i+1}. ${parts.join(' · ')}`);
+      });
+    }
     lines.push('');
   });
   lines.push(`——————————————`);
@@ -4359,6 +4398,8 @@ function _buildEpPrintHtml(tab, fecha, countTxt, tableHtml, filtrosTxt){
     tr:nth-child(even) td{background:#f8f8f8}
     tr:last-child td{border-bottom:none}
     .report-footer{margin-top:10px;font-size:9px;color:#aaa;text-align:right}
+    .lineas-row{display:table-row!important}
+    .tbl-actions-cell,.tbl-btn{display:none!important}
     @media print{ body{padding:8px} .no-print{display:none} @page{margin:10mm} }
   </style></head><body>
   <div class="report-header">
