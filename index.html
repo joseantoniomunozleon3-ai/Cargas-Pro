@@ -1014,6 +1014,19 @@ tr:hover td{background:rgba(245,166,35,0.06)}
 .tbl-reabrir:hover{background:#EEF5FF;border-color:var(--sap-blue)}
 .tbl-del:hover{background:#FFF0F0;border-color:var(--dhl-red)}
 .lineas-row{display:none}
+/* ── Agrupación por camión ──────────────────────────────────────────── */
+.camion-header{
+  display:flex;align-items:center;gap:8px;
+  margin:10px 0 0;padding:6px 12px;
+  background:linear-gradient(90deg,rgba(245,166,35,0.15) 0%,transparent 100%);
+  border-left:3px solid var(--accent);
+  border-radius:0 var(--r-sm) var(--r-sm) 0;
+  font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.4px;text-transform:uppercase;
+}
+.pedido-card.camion-compartido{
+  border-left:3px solid var(--accent);
+  margin-left:4px;
+}
 @media print{.tbl-actions-cell,.tbl-btn{display:none!important}.lineas-row{display:table-row!important}}
 
 /* === EUROPALETS MÓDULO — Enterprise === */
@@ -2667,7 +2680,30 @@ const _loadTimeout = setTimeout(() => {
 col.onSnapshot((snapshot) => {
   clearTimeout(_loadTimeout);
   pedidos = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
-  pedidos.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  // Ordenación: con número → por nº asc; sin número → al final por creación asc (último creado abajo)
+  // Pedidos con misma matrícula (mat1) → se agrupan juntos (camión compartido)
+  pedidos.sort((a,b) => {
+    const aN = a.num ? parseInt(a.num,10) : null;
+    const bN = b.num ? parseInt(b.num,10) : null;
+    // Posición base ignorando agrupación por matrícula
+    const posA = aN !== null ? aN : 1e9 + (a.createdAt||0)/1e13;
+    const posB = bN !== null ? bN : 1e9 + (b.createdAt||0)/1e13;
+    // Representante del grupo matrícula: el mínimo posA de los pedidos con esa mat1
+    // Para el sort final usamos ancla de matrícula: si tienen mat1 igual y ambos la tienen,
+    // se ordenan por la posición del primero del grupo; luego entre ellos por posición propia.
+    const matA = (a.mat1||'').trim().toUpperCase();
+    const matB = (b.mat1||'').trim().toUpperCase();
+    if(matA && matB && matA === matB){
+      // Mismo camión → ordenar internamente por posición propia
+      return posA - posB;
+    }
+    // Ancla del grupo: posición mínima del grupo matrícula
+    const anclaA = matA ? Math.min(...pedidos.filter(x=>(x.mat1||'').trim().toUpperCase()===matA).map(x=> x.num ? parseInt(x.num,10) : 1e9+(x.createdAt||0)/1e13)) : posA;
+    const anclaB = matB ? Math.min(...pedidos.filter(x=>(x.mat1||'').trim().toUpperCase()===matB).map(x=> x.num ? parseInt(x.num,10) : 1e9+(x.createdAt||0)/1e13)) : posB;
+    if(anclaA !== anclaB) return anclaA - anclaB;
+    // Mismo ancla (grupo sin matrícula o anclas iguales) → por posición propia
+    return posA - posB;
+  });
   hideLoadingScreen();
   setSyncStatus('ok');
   // Activar HOY y pestaña TODOS al primer arranque
@@ -2960,12 +2996,26 @@ function renderCards(filtered) {
     document.getElementById('listArea').innerHTML=`<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-txt">${txt}</div>${sub?`<div class="empty-sub">${sub}</div>`:''}</div>`;
     return;
   }
+  // Calcular qué matrículas aparecen más de una vez en el array filtrado
+  const matCount={};
+  filtered.forEach(p=>{ const m=(p.mat1||'').trim().toUpperCase(); if(m) matCount[m]=(matCount[m]||0)+1; });
+  const matMulti = new Set(Object.keys(matCount).filter(m=>matCount[m]>1));
+
   const groups={};
   filtered.forEach(p=>{ const g=p.grupo||'—'; if(!groups[g]) groups[g]=[]; groups[g].push(p); });
   let html='';
   for(const [g,items] of Object.entries(groups)) {
     html+=`<div class="group-header"><div class="group-badge">🏢 ${g}<span class="group-count">${items.length}</span></div><div class="group-line"></div></div>`;
-    items.forEach(p=>{ html+=cardHtml(p); });
+    let lastMat = null;
+    items.forEach(p=>{
+      const mat = (p.mat1||'').trim().toUpperCase();
+      const esCamionCompartido = mat && matMulti.has(mat);
+      if(esCamionCompartido && mat !== lastMat){
+        html+=`<div class="camion-header"><span>🚛 ${p.mat1.trim()}${p.mat2?' · '+p.mat2.trim():''} — mismo camión</span></div>`;
+      }
+      html+=cardHtml(p, esCamionCompartido);
+      lastMat = esCamionCompartido ? mat : null;
+    });
   }
   document.getElementById('listArea').innerHTML=html;
 }
@@ -2982,7 +3032,7 @@ function productosExtraHtml(p) {
       </div>`).join('');
 }
 
-function cardHtml(p) {
+function cardHtml(p, esCamionCompartido=false) {
   const pillClass={pendiente:'pill-pendiente',terminado:'pill-terminado',revision:'pill-revision',cargado:'pill-cargado'}[p.status]||'pill-pendiente';
   const pillLabel={pendiente:'Confección',terminado:'Terminado',revision:'Revisión',cargado:'Cargado'}[p.status]||'—';
   const fecha=p.fecha?new Date(p.fecha+'T00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'';
@@ -2997,7 +3047,7 @@ function cardHtml(p) {
   const actions=p.status==='cargado'
     ?`<button class="tbl-btn tbl-edit" data-action="edit" data-id="${eid}" title="Editar">✏️</button><button class="tbl-btn tbl-reabrir" data-action="reabrir" data-id="${eid}" title="Reabrir">↩️</button><button class="tbl-btn tbl-del" data-action="del" data-id="${eid}" title="Eliminar">🗑️</button>`
     :`<button class="tbl-btn tbl-edit" data-action="edit" data-id="${eid}" title="Editar">✏️</button>${terminarBtn}<button class="tbl-btn tbl-cargar" data-action="cargar" data-id="${eid}" title="Cargar">🚛</button><button class="tbl-btn tbl-del" data-action="del" data-id="${eid}" title="Eliminar">🗑️</button>`;
-  return `<div class="pedido-card status-${p.status}">
+  return `<div class="pedido-card status-${p.status}${esCamionCompartido?' camion-compartido':''}">
     <div class="pedido-top" style="display:flex;align-items:center;gap:4px">${p.num?`<span class="pedido-num">#${p.num}</span>`:''}<span class="pedido-empresa">${p.grupo||'—'}</span>${fecha?`<span class="pedido-fecha">${fecha}</span>`:''}<span class="status-pill ${pillClass}">${pillLabel}</span><span style="margin-left:auto;display:flex;gap:3px;flex-shrink:0">${actions}</span></div>
     <div class="pedido-body">
       <div class="info-row">
@@ -3024,9 +3074,14 @@ function cardHtml(p) {
 
 function renderTable(filtered) {
   if (!filtered.length) { document.getElementById('tableArea').innerHTML=`<div class="empty"><div class="empty-icon">📭</div><div class="empty-txt">Sin resultados</div></div>`; return; }
+  // Pre-calcular matrículas compartidas en este filtered
+  const _matCount={};
+  filtered.forEach(p=>{ const m=(p.mat1||'').trim().toUpperCase(); if(m) _matCount[m]=(_matCount[m]||0)+1; });
+  const _matMulti=new Set(Object.keys(_matCount).filter(m=>_matCount[m]>1));
   const showStatus = activeTab==='todos';
   const statusLabel={pendiente:'Confección',terminado:'Terminado',revision:'Revisión',cargado:'Cargado'};
   const statusColor={pendiente:'var(--status-pend)',terminado:'var(--sap-blue)',revision:'var(--status-rev)',cargado:'var(--status-load)'};
+  let _lastMat_tbl = null;
   const rows=filtered.map(p=>{
     const isCargado = p.status==='cargado';
     const terminarBtn = (p.status==='pendiente'||p.status==='revision')
@@ -3035,6 +3090,13 @@ function renderTable(filtered) {
     const cargarBtn = isCargado
       ? `<button class="tbl-btn tbl-reabrir" data-action="reabrir" data-id="${p.id}" title="Reabrir">↩️</button>`
       : `<button class="tbl-btn tbl-cargar" data-action="cargar" data-id="${p.id}" title="Cargar">🚛</button>`;
+    const _mat_tbl = (p.mat1||'').trim().toUpperCase();
+    const _esCamion = _mat_tbl && _matMulti.has(_mat_tbl);
+    const colSpanCab = showStatus ? 14 : 13;
+    const camionHeaderRow = (_esCamion && _mat_tbl !== _lastMat_tbl)
+      ? `<tr class="camion-tbl-header"><td colspan="${colSpanCab}" style="padding:5px 12px;background:linear-gradient(90deg,rgba(245,166,35,0.18) 0%,transparent 100%);border-left:3px solid #F5A623;font-size:10px;font-weight:700;color:#F5A623;letter-spacing:.5px;text-transform:uppercase">🚛 ${p.mat1.trim()}${p.mat2?' · '+p.mat2.trim():''} — mismo camión</td></tr>`
+      : '';
+    _lastMat_tbl = _esCamion ? _mat_tbl : null;
     const lineas = p.lineas||[];
     const colSpan = showStatus ? 14 : 13;
     const lineasRow = lineas.length ? `<tr class="lineas-row">
@@ -3057,7 +3119,7 @@ function renderTable(filtered) {
         </table>
       </td>
     </tr>` : '';
-    return `<tr>
+    const rowHtml = `<tr>
     <td style="color:var(--t3);font-weight:700">${p.num||'—'}</td>
     <td style="font-weight:700;color:var(--t1)">${p.grupo||'—'}</td>
     <td style="color:var(--sap-blue)">${p.producto||'—'}</td>
@@ -3078,6 +3140,7 @@ function renderTable(filtered) {
       <button class="tbl-btn tbl-del" data-action="del" data-id="${p.id}" title="Eliminar">🗑️</button>
     </td>
   </tr>${lineasRow}`;
+    return camionHeaderRow + rowHtml;
   }).join('');
   const thStatus = showStatus ? `<th>Estado</th>` : '';
   document.getElementById('tableArea').innerHTML=`<div class="table-wrap"><table style="min-width:900px"><thead><tr><th>#</th><th>Cliente</th><th>Producto</th><th>Ref</th><th>Palets</th><th>🟫 Euros</th><th>Tractora</th><th>Remolque</th><th>H. Carga</th><th>H. Salida</th><th>Muelle</th><th>Transportista</th>${thStatus}<th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
