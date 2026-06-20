@@ -350,15 +350,24 @@ header::after{
 .pedido-card.status-cargado{--card-accent:var(--status-load)}
 
 .pedido-top{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 14px;
+  display:flex;flex-direction:column;gap:0;
+  padding:0;
   border-bottom:1px solid var(--border);
   background:linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+}
+.pedido-top-row1{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px 5px;
+  min-width:0;
+}
+.pedido-top-row2{
+  display:flex;align-items:center;gap:6px;
+  padding:0 14px 8px;
 }
 .pedido-num{
   font-family:var(--font-mono);font-size:11px;font-weight:700;
   color:#F5A623;background:linear-gradient(135deg,#1C1F26,#2A2E38);
-  padding:3px 10px;border-radius:4px;white-space:nowrap;
+  padding:3px 10px;border-radius:4px;white-space:nowrap;flex-shrink:0;
   box-shadow:0 1px 4px rgba(0,0,0,0.30);letter-spacing:.3px;
 }
 .pedido-empresa{
@@ -2966,7 +2975,10 @@ function cardHtmlHistorico(p) {
     cargaBlock=`<div class="carga-banner">${p.hora?`<div class="cb-item"><div class="cb-label">⏰ Hora carga</div><div class="cb-val">${p.hora}</div></div>`:''} ${p.hora_salida?`<div class="cb-item"><div class="cb-label">🕐 Hora salida</div><div class="cb-val" style="color:var(--status-rev)">${p.hora_salida}</div></div>`:''} ${p.muelle?`<div class="cb-item"><div class="cb-label">🚪 Muelle</div><div class="cb-val">${p.muelle}</div></div>`:''} ${p.transportista?`<div class="cb-item"><div class="cb-label">🚚 Transportista</div><div class="cb-val">${p.transportista}</div></div>`:''}</div>`;
   }
   return `<div class="pedido-card status-${p.status}" style="opacity:.88">
-    <div class="pedido-top">${p.num?`<span class="pedido-num">#${p.num}</span>`:''}<span class="pedido-empresa">${p.grupo||'—'}</span>${fecha?`<span class="pedido-fecha">${fecha}</span>`:''}<span class="status-pill ${pillClass}">${pillLabel}</span><span style="margin-left:auto;display:flex;align-items:center;gap:6px"><span style="font-size:9px;font-family:var(--font-mono);color:#9575CD;background:#EDE7F6;padding:2px 7px;border-radius:10px;letter-spacing:.3px">HISTÓRICO</span><button class="tbl-btn tbl-edit" data-action="edit-hist" data-id="${p.id}" title="Corregir datos" style="font-size:13px;padding:3px 7px">✏️</button></span></div>
+    <div class="pedido-top">
+      <div class="pedido-top-row1">${p.num?`<span class="pedido-num">#${p.num}</span>`:''}<span class="pedido-empresa">${p.grupo||'—'}</span></div>
+      <div class="pedido-top-row2">${fecha?`<span class="pedido-fecha">${fecha}</span>`:''}<span class="status-pill ${pillClass}">${pillLabel}</span><span style="margin-left:auto;display:flex;align-items:center;gap:6px"><span style="font-size:9px;font-family:var(--font-mono);color:#9575CD;background:#EDE7F6;padding:2px 7px;border-radius:10px;letter-spacing:.3px">HISTÓRICO</span><button class="tbl-btn tbl-edit" data-action="edit-hist" data-id="${p.id}" title="Corregir datos" style="font-size:13px;padding:3px 7px">✏️</button></span></div>
+    </div>
     <div class="pedido-body">
       <div class="info-row">
         ${p.producto?`<div class="info-block md"><div class="info-label">📦 Producto</div><span class="tag tag-producto">${p.producto}</span></div>`:''}
@@ -3048,7 +3060,10 @@ function cardHtml(p, esCamionCompartido=false) {
     ?`<button class="tbl-btn tbl-edit" data-action="edit" data-id="${eid}" title="Editar">✏️</button><button class="tbl-btn tbl-reabrir" data-action="reabrir" data-id="${eid}" title="Reabrir">↩️</button><button class="tbl-btn tbl-del" data-action="del" data-id="${eid}" title="Eliminar">🗑️</button>`
     :`<button class="tbl-btn tbl-edit" data-action="edit" data-id="${eid}" title="Editar">✏️</button>${terminarBtn}<button class="tbl-btn tbl-cargar" data-action="cargar" data-id="${eid}" title="Cargar">🚛</button><button class="tbl-btn tbl-del" data-action="del" data-id="${eid}" title="Eliminar">🗑️</button>`;
   return `<div class="pedido-card status-${p.status}${esCamionCompartido?' camion-compartido':''}">
-    <div class="pedido-top" style="display:flex;align-items:center;gap:4px">${p.num?`<span class="pedido-num">#${p.num}</span>`:''}<span class="pedido-empresa">${p.grupo||'—'}</span>${fecha?`<span class="pedido-fecha">${fecha}</span>`:''}<span class="status-pill ${pillClass}">${pillLabel}</span><span style="margin-left:auto;display:flex;gap:3px;flex-shrink:0">${actions}</span></div>
+    <div class="pedido-top">
+      <div class="pedido-top-row1">${p.num?`<span class="pedido-num">#${p.num}</span>`:''}<span class="pedido-empresa">${p.grupo||'—'}</span></div>
+      <div class="pedido-top-row2">${fecha?`<span class="pedido-fecha">${fecha}</span>`:''}<span class="status-pill ${pillClass}">${pillLabel}</span><span style="margin-left:auto;display:flex;gap:3px;flex-shrink:0">${actions}</span></div>
+    </div>
     <div class="pedido-body">
       <div class="info-row">
         ${p.producto?`<div class="info-block md"><div class="info-label">📦 Producto</div><span class="tag tag-producto">${p.producto}</span></div>`:''}
