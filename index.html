@@ -2276,6 +2276,19 @@ tr:hover td {
 </div>
 
 <!-- CONFIRM -->
+<div id="totalesBg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface,#fff);border-radius:16px;padding:24px 22px 20px;max-width:320px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.28);text-align:center">
+    <div style="font-size:28px;margin-bottom:10px">📊</div>
+    <div style="font-family:var(--font-display,sans-serif);font-size:17px;font-weight:800;color:var(--t1,#111);margin-bottom:6px">¿Incluir totales?</div>
+    <div style="font-size:12px;color:var(--t2,#555);margin-bottom:20px;line-height:1.5">Se sumarán los <strong>palets</strong> y los <strong>europalets</strong> de todos los pedidos del informe.</div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <button id="totalesSiBtn" style="padding:11px;border-radius:10px;border:none;background:var(--accent,#F5A623);color:#fff;font-weight:800;font-size:13px;cursor:pointer;letter-spacing:.3px">✅ Con totales</button>
+      <button id="totalesNoBtn" style="padding:11px;border-radius:10px;border:1px solid var(--border,#ddd);background:var(--surface2,#f5f5f5);color:var(--t1,#111);font-weight:700;font-size:13px;cursor:pointer">Sin totales</button>
+      <button onclick="document.getElementById('totalesBg').style.display='none'" style="padding:8px;border-radius:10px;border:none;background:none;color:var(--t3,#888);font-size:12px;cursor:pointer">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="confirm-bg" id="confirmBg" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-box">
     <div class="confirm-icon" id="confirmIcon">⚠️</div>
@@ -3528,13 +3541,36 @@ function exportarCSV() {
   toast('📤 CSV exportado');
 }
 
-function _buildPrintHtml(tab, fecha, countTxt, tableHtml) {
+function _calcTotales(filtered) {
+  let palets = 0, euros = 0;
+  filtered.forEach(p => {
+    const u = parseFloat((p.uds||'0').toString().replace(',','.')) || 0;
+    const e = parseFloat((p.europalets||'0').toString().replace(',','.')) || 0;
+    palets += u;
+    euros  += e;
+    // Sumar también productos extra si los hay
+    (p.productosExtra||[]).forEach(pe => {
+      palets += parseFloat((pe.uds||'0').toString().replace(',','.')) || 0;
+      euros  += parseFloat((pe.europalets||'0').toString().replace(',','.')) || 0;
+    });
+  });
+  return { palets, euros };
+}
+
+function _buildPrintHtml(tab, fecha, countTxt, tableHtml, totales) {
   // Strip action buttons column from the cloned table HTML
   const div = document.createElement('div');
   div.innerHTML = tableHtml;
   div.querySelectorAll('.tbl-actions-cell').forEach(el=>el.remove());
   div.querySelectorAll('th:last-child:empty').forEach(el=>el.remove());
   const cleanHtml = div.innerHTML;
+  const totalesHtml = totales ? `
+  <div style="margin:14px 0 0;padding:12px 16px;background:#FFFBF0;border:2px solid #FFCC00;border-radius:6px;display:flex;gap:32px;align-items:center">
+    <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-right:8px">TOTALES</div>
+    <div><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px">Palets</div><div style="font-size:20px;font-weight:900;color:#1A1A1A;font-family:monospace">${totales.palets % 1 === 0 ? totales.palets : totales.palets.toFixed(1)}</div></div>
+    <div style="width:1px;height:36px;background:#E0D080"></div>
+    <div><div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px">🟫 Europalets</div><div style="font-size:20px;font-weight:900;color:#6D4C41;font-family:monospace">${totales.euros % 1 === 0 ? totales.euros : totales.euros.toFixed(1)}</div></div>
+  </div>` : '';
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cargas Pro — ${tab}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -3573,75 +3609,69 @@ function _buildPrintHtml(tab, fecha, countTxt, tableHtml) {
     <span class="badge">${tab}</span>
   </div>
   <div class="table-wrap">${cleanHtml}</div>
+  ${totalesHtml}
   <div class="report-footer">Cargas Pro © ${new Date().getFullYear()} · SAT GUADEX S.L.</div>
   </body></html>`;
 }
 
+function _getFilteredPedidos() {
+  const q  = (document.getElementById('searchInput').value||'').toLowerCase();
+  const gf = document.getElementById('fGrupo').value;
+  const mf = document.getElementById('fMuelle').value;
+  const pf = document.getElementById('fProducto').value;
+  const fd = document.getElementById('fFechaDesde').value;
+  const fh = document.getElementById('fFechaHasta').value;
+  const hoy = new Date().toISOString().slice(0,10);
+  const sm = {pendientes:'pendiente',terminado:'terminado',cargados:'cargado'};
+  const ts = sm[activeTab];
+  return pedidos.filter(p=>{
+    const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
+    if(activeTab==='historico'){ const dc=cargDay(p); const fOk=(!fd||(dc&&dc>=fd))&&(!fh||(dc&&dc<=fh)); return p.status==='cargado' && dc && dc < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf) && fOk; }
+    const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
+    let statusOk;
+    if(activeTab==='todos') statusOk = !(p.status==='cargado' && cargDay(p) && cargDay(p) < hoy);
+    else if(activeTab==='cargados') statusOk = p.status==='cargado' && (!cargDay(p) || cargDay(p) >= hoy);
+    else statusOk = p.status===ts;
+    return statusOk && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf) && fechaOk;
+  });
+}
+
+function _showTotalesModal(onSi, onNo) {
+  const bg = document.getElementById('totalesBg');
+  bg.style.display = 'flex';
+  document.getElementById('totalesSiBtn').onclick = () => { bg.style.display='none'; onSi(); };
+  document.getElementById('totalesNoBtn').onclick = () => { bg.style.display='none'; onNo(); };
+}
+
 function imprimirTabla() {
-  // Construir siempre la tabla a partir de los datos filtrados (funciona en cards y table)
-  const fecha = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const tab = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados',historico:'Histórico'}[activeTab]||'';
+  const fecha    = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const tab      = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados',historico:'Histórico'}[activeTab]||'';
   const countTxt = document.getElementById('countLbl').textContent;
-  // Asegurar que tableArea esté actualizado
-  const prevView = activeView; const wasHidden = document.getElementById('tableArea').style.display==='none';
-  if(wasHidden){ document.getElementById('tableArea').style.display=''; }
-  // Forzar render de tabla
-  const filtered = (function(){
-    const q = (document.getElementById('searchInput').value||'').toLowerCase();
-    const gf = document.getElementById('fGrupo').value;
-    const mf = document.getElementById('fMuelle').value;
-    const pf = document.getElementById('fProducto').value;
-    const fd = document.getElementById('fFechaDesde').value;
-    const fh = document.getElementById('fFechaHasta').value;
-    const hoy = new Date().toISOString().slice(0,10);
-    const sm = {pendientes:'pendiente',terminado:'terminado',cargados:'cargado'};
-    const ts = sm[activeTab];
-    return pedidos.filter(p=>{
-      const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
-      if(activeTab==='historico'){ const dc=cargDay(p); const fOk=(!fd||(dc&&dc>=fd))&&(!fh||(dc&&dc<=fh)); return p.status==='cargado' && dc && dc < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf) && fOk; }
-      const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
-      let statusOk;
-      if(activeTab==='todos') statusOk = !(p.status==='cargado' && cargDay(p) && cargDay(p) < hoy);
-      else if(activeTab==='cargados') statusOk = p.status==='cargado' && (!cargDay(p) || cargDay(p) >= hoy);
-      else statusOk = p.status===ts;
-      return statusOk && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf||p.muelle===mf) && (!pf||p.producto===pf) && fechaOk;
-    });
-  })();
-  renderTable(filtered);
-  const tableHtml = document.getElementById('tableArea').innerHTML;
-  if(wasHidden){ document.getElementById('tableArea').style.display='none'; }
-  const html = _buildPrintHtml(tab, fecha, countTxt, tableHtml);
-  const win = window.open('','_blank','width=960,height=700');
-  win.document.write(html + `<script>window.onload=()=>{window.print();}<\/script>`);
-  win.document.close();
+  const filtered = _getFilteredPedidos();
+
+  function doImprimir(conTotales) {
+    const wasHidden = document.getElementById('tableArea').style.display==='none';
+    if(wasHidden) document.getElementById('tableArea').style.display='';
+    renderTable(filtered);
+    const tableHtml = document.getElementById('tableArea').innerHTML;
+    if(wasHidden) document.getElementById('tableArea').style.display='none';
+    const totales = conTotales ? _calcTotales(filtered) : null;
+    const html = _buildPrintHtml(tab, fecha, countTxt, tableHtml, totales);
+    const win = window.open('','_blank','width=960,height=700');
+    win.document.write(html + `<script>window.onload=()=>{window.print();}<\/script>`);
+    win.document.close();
+  }
+
+  _showTotalesModal(() => doImprimir(true), () => doImprimir(false));
 }
 
 async function compartirTabla() {
-  const fecha = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const tab = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados',historico:'Histórico'}[activeTab]||'';
+  const fecha    = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const tab      = {pendientes:'Confección',terminado:'Terminado',todos:'Todos',cargados:'Cargados',historico:'Histórico'}[activeTab]||'';
   const countTxt = document.getElementById('countLbl').textContent;
+  const filtered = _getFilteredPedidos();
 
-  const q   = document.getElementById('searchInput').value.toLowerCase();
-  const gf  = document.getElementById('fGrupo').value;
-  const mf2 = document.getElementById('fMuelle').value;
-  const pf  = document.getElementById('fProducto').value;
-  const fd  = document.getElementById('fFechaDesde').value;
-  const fh  = document.getElementById('fFechaHasta').value;
-  const hoy = new Date().toISOString().slice(0, 10);
-  const sm  = {pendientes:'pendiente',terminado:'terminado',cargados:'cargado'};
-  const ts  = sm[activeTab];
-
-  const filtered = pedidos.filter(p => {
-    const txt=[p.num,p.grupo,p.producto,p.ref,p.mat1,p.mat2,p.notas,p.pais,p.muelle,p.transportista].join(' ').toLowerCase();
-    if (activeTab==='historico') return p.status==='cargado' && cargDay(p) && cargDay(p) < hoy && (!q||txt.includes(q)) && (!gf||p.grupo===gf) && (!mf2||p.muelle===mf2) && (!pf||p.producto===pf);
-    const fechaOk = (!fd||(p.fecha&&p.fecha>=fd))&&(!fh||(p.fecha&&p.fecha<=fh));
-    let statusOk;
-    if (activeTab==='todos') statusOk = !(p.status==='cargado' && cargDay(p) && cargDay(p) < hoy);
-    else if (activeTab==='cargados') statusOk = p.status==='cargado' && (!cargDay(p) || cargDay(p) >= hoy);
-    else statusOk = p.status===ts;
-    return statusOk&&(!q||txt.includes(q))&&(!gf||p.grupo===gf)&&(!mf2||p.muelle===mf2)&&(!pf||p.producto===pf)&&fechaOk;
-  });
-
+  async function doCompartir(conTotales) {
   const statusEmoji={pendiente:'🟡',terminado:'🔵',revision:'🟠',cargado:'🟢'};
   const lines = [];
   lines.push(`🚛 *Cargas Pro — ${tab}*`);
@@ -3675,6 +3705,13 @@ async function compartirTabla() {
     }
     lines.push('');
   });
+  if(conTotales) {
+    const t = _calcTotales(filtered);
+    lines.push(`——————————————`);
+    lines.push(`📊 TOTALES`);
+    lines.push(`   📦 Palets:      ${t.palets % 1 === 0 ? t.palets : t.palets.toFixed(1)}`);
+    lines.push(`   🟫 Europalets:  ${t.euros  % 1 === 0 ? t.euros  : t.euros.toFixed(1)}`);
+  }
   lines.push(`——————————————`);
   lines.push(`SAT GUADEX · Palma del Río`);
 
@@ -3686,13 +3723,11 @@ async function compartirTabla() {
       toast('📱 Compartido');
     } catch(e) {
       if (e.name !== 'AbortError') {
-        // fallback: copiar al portapapeles
         await navigator.clipboard.writeText(texto);
         toast('📋 Copiado al portapapeles');
       }
     }
   } else {
-    // Navegador sin Web Share API: copiar al portapapeles
     try {
       await navigator.clipboard.writeText(texto);
       toast('📋 Copiado al portapapeles');
@@ -3700,6 +3735,9 @@ async function compartirTabla() {
       toast('❌ No se pudo compartir');
     }
   }
+  } // fin doCompartir
+
+  _showTotalesModal(() => doCompartir(true), () => doCompartir(false));
 }
 
 async function exportarJSON() {
