@@ -2802,7 +2802,11 @@ function setView(v, el) {
   document.getElementById('listArea').style.display = v==='cards' ? '' : 'none';
   document.getElementById('tableArea').style.display = v==='table' ? '' : 'none';
   const btnImp = document.getElementById('btnImprimir');
-  if(btnImp) btnImp.style.display = '';
+  if(btnImp) {
+    btnImp.style.display = '';
+    btnImp.title = v==='cards' ? 'Imprimir fichas' : 'Imprimir tabla';
+    btnImp.textContent = v==='cards' ? '📇' : '🖨️';
+  }
   const btnComp = document.getElementById('btnCompartir');
   if(btnComp) btnComp.style.display = '';
   render();
@@ -3728,20 +3732,167 @@ function imprimirTabla() {
   const countTxt = document.getElementById('countLbl').textContent;
   const filtered = _getFilteredPedidos();
 
-  function doImprimir(conTotales) {
-    const wasHidden = document.getElementById('tableArea').style.display==='none';
-    if(wasHidden) document.getElementById('tableArea').style.display='';
-    renderTable(filtered);
-    const tableHtml = document.getElementById('tableArea').innerHTML;
-    if(wasHidden) document.getElementById('tableArea').style.display='none';
-    const totales = conTotales ? _calcTotales(filtered) : null;
-    const html = _buildPrintHtml(tab, fecha, countTxt, tableHtml, totales);
-    const win = window.open('','_blank','width=960,height=700');
-    win.document.write(html + `<script>window.onload=()=>{window.print();}<\/script>`);
-    win.document.close();
+  if (activeView === 'cards') {
+    // ── INFORME DE FICHAS (vista Tarjetas) ──
+    function doImprimirFichas(conTotales) {
+      const totales = conTotales ? _calcTotales(filtered) : null;
+      const html = _buildCardsReportHtml(tab, fecha, countTxt, filtered, totales);
+      const win = window.open('','_blank','width=960,height=700');
+      win.document.write(html + `<script>window.onload=()=>{window.print();}<\/script>`);
+      win.document.close();
+    }
+    _showTotalesModal(() => doImprimirFichas(true), () => doImprimirFichas(false));
+  } else {
+    // ── INFORME DE TABLA (vista Tabla) ──
+    function doImprimir(conTotales) {
+      const wasHidden = document.getElementById('tableArea').style.display==='none';
+      if(wasHidden) document.getElementById('tableArea').style.display='';
+      renderTable(filtered);
+      const tableHtml = document.getElementById('tableArea').innerHTML;
+      if(wasHidden) document.getElementById('tableArea').style.display='none';
+      const totales = conTotales ? _calcTotales(filtered) : null;
+      const html = _buildPrintHtml(tab, fecha, countTxt, tableHtml, totales);
+      const win = window.open('','_blank','width=960,height=700');
+      win.document.write(html + `<script>window.onload=()=>{window.print();}<\/script>`);
+      win.document.close();
+    }
+    _showTotalesModal(() => doImprimir(true), () => doImprimir(false));
+  }
+}
+
+function _buildCardsReportHtml(tab, fecha, countTxt, filtered, totales) {
+  const statusColor = {pendiente:'#C07800',terminado:'#0066CC',revision:'#CC3D00',cargado:'#1A7A30'};
+  const statusBg    = {pendiente:'#FFF8E6',terminado:'#E8F0FF',revision:'#FFF0E8',cargado:'#E8F7ED'};
+  const statusBord  = {pendiente:'#E8940A',terminado:'#4A90D9',revision:'#D4520A',cargado:'#2DB650'};
+  const statusLabel = {pendiente:'Confección',terminado:'Terminado',revision:'Revisión',cargado:'Cargado'};
+
+  // Agrupar por cliente (mismo orden que la app)
+  const groups = {};
+  filtered.forEach(p => { const g = p.grupo||'—'; if(!groups[g]) groups[g]=[]; groups[g].push(p); });
+
+  let cardsHtml = '';
+  for (const [g, items] of Object.entries(groups)) {
+    cardsHtml += `<div class="group-section">
+      <div class="group-title">🏢 ${g} <span class="group-cnt">${items.length}</span></div>
+      <div class="cards-grid">`;
+    items.forEach(p => {
+      const sc = statusColor[p.status]||'#888';
+      const sb = statusBg[p.status]||'#fafafa';
+      const sbo= statusBord[p.status]||'#ccc';
+      const sl = statusLabel[p.status]||p.status;
+      const fechaFmt = p.fecha ? new Date(p.fecha+'T00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}) : '';
+
+      // Productos: principal + extras
+      let productosHtml = '';
+      const productosAll = [];
+      if(p.producto || p.uds || p.europalets) productosAll.push({producto:p.producto,uds:p.uds,europalets:p.europalets,pais:p.pais});
+      (p.productosExtra||[]).forEach(pe => productosAll.push(pe));
+      if(productosAll.length) {
+        productosHtml = productosAll.map(pr => {
+          const parts = [];
+          if(pr.producto) parts.push(`<strong>${pr.producto}</strong>`);
+          if(pr.uds) parts.push(`${pr.uds} pal.`);
+          if(pr.europalets) parts.push(`🟫 ${pr.europalets} euros`);
+          if(pr.pais) parts.push(`${pr.pais}`);
+          return `<div class="prod-line">${parts.join(' · ')}</div>`;
+        }).join('');
+      }
+
+      cardsHtml += `
+      <div class="ficha" style="border-top:4px solid ${sbo}">
+        <div class="ficha-head">
+          ${p.num ? `<span class="ficha-num">#${p.num}</span>` : ''}
+          <span class="ficha-empresa">${p.grupo||'—'}</span>
+          <span class="ficha-status" style="background:${sb};color:${sc};border:1px solid ${sbo}">${sl}</span>
+        </div>
+        ${fechaFmt || p.ref ? `<div class="ficha-sub">${fechaFmt?`<span class="ficha-fecha">📅 ${fechaFmt}</span>`:''}${p.ref?`<span class="ficha-ref">📋 ${p.ref}</span>`:''}</div>` : ''}
+        ${productosHtml ? `<div class="ficha-productos">${productosHtml}</div>` : ''}
+        <div class="ficha-data">
+          ${p.mat1 ? `<div class="dato"><div class="dato-lbl">🚛 Tractora</div><div class="dato-val">${p.mat1}${p.mat2?' / '+p.mat2:''}</div></div>` : ''}
+          ${p.transportista ? `<div class="dato"><div class="dato-lbl">🚚 Transportista</div><div class="dato-val">${p.transportista}</div></div>` : ''}
+          ${p.muelle ? `<div class="dato"><div class="dato-lbl">🚪 Muelle</div><div class="dato-val">${p.muelle}</div></div>` : ''}
+          ${p.hora ? `<div class="dato"><div class="dato-lbl">⏰ Hora</div><div class="dato-val">${p.hora}${p.hora_salida?' → '+p.hora_salida:''}</div></div>` : ''}
+        </div>
+        ${p.notas ? `<div class="ficha-notas">💬 ${p.notas}</div>` : ''}
+      </div>`;
+    });
+    cardsHtml += `</div></div>`;
   }
 
-  _showTotalesModal(() => doImprimir(true), () => doImprimir(false));
+  const totalesHtml = totales ? `
+  <div class="totales-bar">
+    <span class="tot-lbl">📊 TOTALES</span>
+    <div class="tot-item"><div class="tot-label">Palets</div><div class="tot-val">${totales.palets%1===0?totales.palets:totales.palets.toFixed(1)}</div></div>
+    <div class="tot-sep"></div>
+    <div class="tot-item"><div class="tot-label">🟫 Europalets</div><div class="tot-val" style="color:#6D4C41">${totales.euros%1===0?totales.euros:totales.euros.toFixed(1)}</div></div>
+  </div>` : '';
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cargas Pro — ${tab} (Fichas)</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;padding:16px 18px;color:#1A1A1A;font-size:11px;background:#F5F2EC}
+    /* ── CABECERA ── */
+    .rpt-header{display:flex;align-items:center;gap:14px;background:#1C1F26;color:#fff;padding:12px 16px;border-radius:8px;margin-bottom:4px}
+    .rpt-logo{font-size:26px}
+    .rpt-title{font-size:16px;font-weight:700;letter-spacing:-.2px}
+    .rpt-title span{color:#F5A623}
+    .rpt-meta{font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;letter-spacing:.3px}
+    .rpt-sub{display:flex;justify-content:space-between;align-items:center;padding:7px 0 10px;font-size:10px;color:#666;border-bottom:1px solid #D0C8B8}
+    .rpt-badge{background:#F5A623;color:#1C1F26;font-weight:700;padding:2px 9px;border-radius:3px;font-size:9px;text-transform:uppercase;letter-spacing:.5px}
+    /* ── GRUPOS ── */
+    .group-section{margin-bottom:18px}
+    .group-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#F5A623;background:#1C1F26;padding:5px 12px;border-radius:5px;margin-bottom:10px;display:inline-flex;align-items:center;gap:8px}
+    .group-cnt{background:#F5A623;color:#1C1F26;border-radius:3px;padding:1px 7px;font-size:9px;font-weight:800}
+    /* ── GRID DE FICHAS ── */
+    .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    /* ── FICHA ── */
+    .ficha{background:#fff;border-radius:8px;border:1px solid #D8D0BC;padding:10px 12px 9px;break-inside:avoid;page-break-inside:avoid}
+    .ficha-head{display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap}
+    .ficha-num{font-family:monospace;font-size:10px;font-weight:700;background:#1C1F26;color:#F5A623;padding:2px 8px;border-radius:3px;white-space:nowrap;flex-shrink:0}
+    .ficha-empresa{font-size:12px;font-weight:800;flex:1;text-transform:uppercase;letter-spacing:-.1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ficha-status{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;padding:2px 8px;border-radius:3px;white-space:nowrap;flex-shrink:0}
+    .ficha-sub{display:flex;gap:10px;font-size:9px;color:#666;margin-bottom:6px;flex-wrap:wrap}
+    .ficha-fecha{background:#F0EDE5;padding:1px 7px;border-radius:3px;font-family:monospace}
+    .ficha-ref{background:#E8EEFF;color:#3355AA;padding:1px 7px;border-radius:3px;font-family:monospace;font-weight:600}
+    /* ── PRODUCTOS ── */
+    .ficha-productos{background:#FFFBF2;border-left:3px solid #F5A623;padding:5px 9px;border-radius:0 5px 5px 0;margin-bottom:7px;font-size:10px}
+    .prod-line{color:#5C4A00;font-weight:500;line-height:1.5}
+    .prod-line strong{font-weight:800;color:#1A1A1A}
+    /* ── DATOS ── */
+    .ficha-data{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin-bottom:5px}
+    .dato{}
+    .dato-lbl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+    .dato-val{font-family:monospace;font-size:11px;font-weight:700;color:#1A1A1A}
+    .ficha-notas{font-size:9px;color:#555;border-top:1px dashed #DDD;padding-top:5px;margin-top:4px;font-style:italic}
+    /* ── TOTALES ── */
+    .totales-bar{display:flex;align-items:center;gap:24px;background:#FFFBF0;border:2px solid #F5A623;border-radius:7px;padding:10px 16px;margin-top:14px}
+    .tot-lbl{font-size:9px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.6px;margin-right:8px}
+    .tot-item{}
+    .tot-label{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:.5px}
+    .tot-val{font-size:22px;font-weight:900;color:#1A1A1A;font-family:monospace;line-height:1.1}
+    .tot-sep{width:1px;height:34px;background:#E0C060}
+    .rpt-footer{margin-top:10px;font-size:8px;color:#BBB;text-align:right}
+    @media print{
+      body{background:#fff;padding:6px}
+      .cards-grid{grid-template-columns:1fr 1fr}
+      @page{margin:8mm;size:A4}
+    }
+  </style></head><body>
+  <div class="rpt-header">
+    <div class="rpt-logo">🚛</div>
+    <div>
+      <div class="rpt-title">Cargas<span>Pro</span> — ${tab}</div>
+      <div class="rpt-meta">SAT GUADEX · Palma del Río · Generado el ${fecha} · Informe de fichas</div>
+    </div>
+  </div>
+  <div class="rpt-sub">
+    <span>${countTxt}</span>
+    <span class="rpt-badge">📇 Fichas · ${tab}</span>
+  </div>
+  ${cardsHtml}
+  ${totalesHtml}
+  <div class="rpt-footer">Cargas Pro © ${new Date().getFullYear()} · SAT GUADEX S.L. · Informe de Fichas Operativas</div>
+  </body></html>`;
 }
 
 async function compartirTabla() {
