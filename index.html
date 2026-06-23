@@ -3384,7 +3384,7 @@ function _renumerarLineas() {
   });
 }
 
-function _esc(v){ return (v||'').replace(/"/g,'&quot;'); }
+function _esc(v){ return (v==null?'':String(v)).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function getLineasPedido() {
   return [...document.querySelectorAll('#lineas-container .linea-pedido')].map(el => ({
@@ -3450,6 +3450,7 @@ function getProductosExtra() {
 function cargarProductosExtra(productosExtra) {
   const container = document.getElementById('productos-extra-container');
   container.innerHTML = '';
+  _productoIdx = 0;
   (productosExtra||[]).forEach(p => addProductoExtra(p));
 }
 
