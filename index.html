@@ -345,8 +345,40 @@ header::after{
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 .pedido-card.status-pendiente{--card-accent:var(--status-pend)}
-.pedido-card.status-terminado{--card-accent:var(--sap-blue)}
 .pedido-card.status-revision{--card-accent:var(--status-rev)}
+
+/* ══ TERMINADO — card con fondo ámbar/dorado ══ */
+.pedido-card.status-terminado{
+  --card-accent:var(--sap-blue);
+  background:linear-gradient(135deg,rgba(232,148,10,0.13) 0%,rgba(212,137,10,0.07) 100%);
+  border-color:rgba(212,137,10,0.35);
+  border-left-color:var(--sap-blue);
+  opacity:0.88;
+}
+.pedido-card.status-terminado .pedido-top{
+  background:linear-gradient(135deg,rgba(232,148,10,0.18) 0%,rgba(212,137,10,0.07) 100%);
+  border-bottom-color:rgba(212,137,10,0.25);
+}
+.pedido-card.status-terminado .pedido-num{
+  background:linear-gradient(135deg,#B87000,#9A5E00);
+  color:#fff;
+}
+.pedido-card.status-terminado .info-row{
+  background:rgba(232,148,10,0.07);
+  border-color:rgba(212,137,10,0.20);
+}
+.pedido-card.status-terminado .pedido-actions{
+  background:rgba(232,148,10,0.10);
+  border-top-color:rgba(212,137,10,0.25);
+}
+.pedido-card.status-terminado .action-btn{
+  background:rgba(232,148,10,0.08);
+  border-right-color:rgba(212,137,10,0.20);
+}
+.pedido-card.status-terminado:hover{
+  opacity:1;
+  box-shadow:0 4px 16px rgba(212,137,10,0.22),0 0 0 1px rgba(212,137,10,0.30);
+}
 
 /* ══ CARGADO — card con fondo verde completo ══ */
 .pedido-card.status-cargado{
